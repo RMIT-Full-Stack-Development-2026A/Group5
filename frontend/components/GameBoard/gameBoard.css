@@ -1,0 +1,94 @@
+/*Board*/
+.board {
+    display: grid;
+    grid-template-columns: repeat(10, 63px);
+    grid-template-rows: repeat(10, 63px);
+    border: 3px solid #111;
+}
+
+/*Cell*/
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 63px;
+    height: 63px;
+    border: 1px solid #111;
+    box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.cell:hover {
+    filter: brightness(0.91);
+}
+
+.bg-dark-cell  { background-color: #FFACAC; }
+.bg-light-cell { background-color: #FFE4E4; }
+
+/*Marks*/
+.piece {
+    font-size: 34px;
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+    line-height: 1;
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    padding: 0;
+}
+
+.piece-X { color: #6E0000; }
+.piece-O { color: #5941C9; }
+
+/* Winning cells */
+
+/* Red line drawn through the winning 5 cells */
+.cell.win::after {
+    content: '';
+    position: absolute;
+    background-color: #e00;
+    z-index: 1;
+}
+
+.cell.win.horizontal::after {
+    top: 50%;
+    left: -2px;
+    right: -2px;
+    height: 5px;
+    transform: translateY(-50%);
+}
+
+.cell.win.vertical::after {
+    left: 50%;
+    top: -2px;
+    bottom: -2px;
+    width: 5px;
+    transform: translateX(-50%);
+}
+
+.cell.win.diagonal-right::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.cell.win.diagonal-left::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+/*Lobby footer*/
+.lobby-footer {
+    margin-top: 6px;
+    font-family: monospace;
+    font-size: 1rem;
+    color: #333;
+    align-self: flex-start;
+}
