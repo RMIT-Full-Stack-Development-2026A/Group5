@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getAIMove } from './gameBoardService';
 
 const SIZE = 10;
 const WIN_LENGTH = 5;
@@ -40,8 +41,7 @@ const checkWinner = (squares) => {
     }
     return null;
 };
-
-export const useGameBoard = () => {
+export const useGameBoard = (selectedMode = 'local') => {
     const [board, setBoard] = useState(Array(SIZE * SIZE).fill(null));
     const [xIsNext, setXIsNext] = useState(true);
     const [winner, setWinner] = useState(null);
@@ -49,29 +49,28 @@ export const useGameBoard = () => {
     const [winDirection, setWinDirection] = useState(null);
 
     const [gameStatus, setGameStatus] = useState('waiting');  // waiting | ongoing | finished | aborted
-    const [result, setResult]         = useState(null);        // null | 'X_wins' | 'O_wins' | 'aborted'
-    const [startTime, setStartTime]   = useState(null);
-    const [endTime, setEndTime]       = useState(null);
+    const [result, setResult] = useState(null);        // null | 'X_wins' | 'O_wins' | 'aborted'
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
+    const [AITurn, setAITurn] = useState(false); // For single-player modes, track if it's AI's turn
 
 
     const [moves, setMoves] = useState([]);
 
-    const handleCellClick = (index) => {
-        if (board[index] || winner || gameStatus === 'aborted' || gameStatus === 'finished') return;
-
+    const makeMove = (index, player) => {
         const now = new Date();
-        const currentPlayer = xIsNext ? 'X' : 'O';
         const newBoard = [...board];
-        newBoard[index] = currentPlayer;
+        newBoard[index] = player;
 
         // Record start time on the very first move
         if (!startTime) setStartTime(now);
 
         const newMove = {
-            moveNumber:        moves.length + 1,
-            playerId:          currentPlayer,   // will become actual user _id once auth is wired up
+            moveNumber: moves.length + 1,
+            playerId: player,   // will become actual user _id once auth is wired up
             algebraicNotation: toAlgebraic(index),
-            timestamp:         now,
+            timestamp: now,
+            index: index,
         };
 
         setBoard(newBoard);
@@ -86,16 +85,51 @@ export const useGameBoard = () => {
             setGameStatus('finished');
             setEndTime(now);
             setResult(winResult.player === 'X' ? 'X_wins' : 'O_wins');
-        } else {
+            return true;
+        }
+        return false;
+    };
+
+    const handleCellClick = (index) => {
+        if (gameStatus === 'finished' || gameStatus === 'aborted') return;
+        if (board[index]) return; // Cell already occupied
+        if (AITurn) return; // Prevent player from moving while AI is thinking
+
+        const player = selectedMode === 'local' ? (xIsNext ? 'X' : 'O') : 'X'; // Default to 'X' for single-player modes
+        const gameEnd = makeMove(index, player);
+        if (selectedMode === 'local' && !gameEnd) {
             setXIsNext(!xIsNext);
         }
+        else {
+            setXIsNext(false);
+            setAITurn(true);
+        }
     };
+
+    useEffect(() => {
+        if (AITurn && gameStatus === 'ongoing' && !winner) {
+
+            const timer = setTimeout(() => {
+                // Call the AI move function here
+                getAIMove({ board, selectedMode, lastMove: moves[moves.length - 1].index, boardSize: SIZE })
+                    .then((aiMove) => {
+                        makeMove(aiMove.moveIndex, 'O');
+                    })
+                    .finally(() => {
+                        setAITurn(false);
+                        setXIsNext(true);
+                    });
+            }, 500); // Simulate AI thinking time
+            return () => clearTimeout(timer);
+        }
+    }, [AITurn]);
 
     const abortGame = () => {
         if (gameStatus !== 'ongoing') return;
         setGameStatus('aborted');
         setEndTime(new Date());
         setResult('aborted');
+        setAITurn(false);
     };
 
     const resetGame = () => {
@@ -109,13 +143,14 @@ export const useGameBoard = () => {
         setStartTime(null);
         setEndTime(null);
         setMoves([]);
+        setAITurn(false);
     };
 
     // Returns a snapshot matching the GAME_SESSION + MOVE structure — ready for backend POST
     const getGameSessionData = () => ({
-        gameType:      'LOCAL',
-        boardSize:     '10x10',
-        boardStyle:    'default',
+        gameType: selectedMode,
+        boardSize: '10x10',
+        boardStyle: 'default',
         player1Marker: 'X',
         player2Marker: 'O',
         gameStatus,
@@ -134,6 +169,7 @@ export const useGameBoard = () => {
         gameStatus,
         result,
         moves,
+        AITurn,
         handleCellClick,
         abortGame,
         resetGame,

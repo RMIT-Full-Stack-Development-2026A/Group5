@@ -1,15 +1,17 @@
 import React from 'react';
 import './gameBoard.css';
 import { useGameBoard } from './useGameBoard';
+import { ClassicGameBoard } from './ClassicGameBoard';
+import { CelestialGameBoard } from './CelestialGameBoard';
 
 const LOBBY_ID = '1234567';
 
-const GameBoard = () => {
+const GameBoard = ({ selectedMode, boardStyle = 'classic' }) => {
     const {
         board, xIsNext, winner, winningLine, winDirection,
         gameStatus,
         handleCellClick, abortGame, resetGame,
-    } = useGameBoard();
+    } = useGameBoard(selectedMode);
 
     const isAborted  = gameStatus === 'aborted';
     const isFinished = gameStatus === 'finished';
@@ -28,11 +30,12 @@ const GameBoard = () => {
         : 'text-dark';
 
     return (
-        <div className="d-flex flex-column align-items-start py-4">
+        <div className="d-flex flex-column align-items-center py-4 col-lg-8 ">
 
             {/* Status + buttons */}
             <div className="d-flex align-items-center gap-2 mb-3">
                 <span className={`fs-5 fw-bold ${statusColor}`}>{statusText}</span>
+                <span className="badge text-bg-light border">Mode: {selectedMode}</span>
                 <button
                     className="btn btn-outline-danger btn-sm px-3"
                     onClick={abortGame}
@@ -46,30 +49,24 @@ const GameBoard = () => {
             </div>
 
             {/* Board */}
-            <div className={`board ${isOver ? 'board-over' : ''}`}>
-                {board.map((cell, index) => {
-                    const row = Math.floor(index / 10);
-                    const col = index % 10;
-                    const isDark = (row + col) % 2 === 0;
-                    const isWin  = winningLine.includes(index);
-
-                    let cellClass = `cell ${isDark ? 'bg-dark-cell' : 'bg-light-cell'}`;
-                    if (isWin) cellClass += ` win ${winDirection}`;
-
-                    return (
-                        <div
-                            key={index}
-                            className={cellClass}
-                            onClick={() => handleCellClick(index)}
-                        >
-                            {cell && <span className={`piece piece-${cell}`}>{cell}</span>}
-                        </div>
-                    );
-                })}
-            </div>
+            {boardStyle === 'celestial' ? (
+                <CelestialGameBoard
+                    board={board}
+                    winningLine={winningLine}
+                    isFinished={isFinished}
+                    handleCellClick={handleCellClick}
+                />
+            ) : (
+                <ClassicGameBoard
+                    board={board}
+                    winningLine={winningLine}
+                    winDirection={winDirection}
+                    handleCellClick={handleCellClick}
+                />
+            )}
 
             {/* Lobby footer */}
-            <div className="lobby-footer">
+            <div className="lobby-footer text-center">
                 LOBBY ID: {LOBBY_ID}
             </div>
 
