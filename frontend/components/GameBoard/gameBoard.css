@@ -1,0 +1,114 @@
+/*Board*/
+:root {
+    --primary-color: #FFE4E4;
+    --secondary-color: #FFACAC;
+    --accent-color: #FF6B6B;
+    --background-color: #FFF0F0;
+    --btn-active: #FF6B6B;
+    --btn-hover: #FF4C4C;
+    --font-family: "IBM Plex Mono", monospace;
+}
+
+.board {
+    position: relative;
+    width: fit-content;
+    border: 3px solid #111;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.board-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(10, 63px);
+    grid-template-rows: repeat(10, 63px);
+}
+
+.board-bg-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.board-win-svg {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+/*Cell*/
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 63px;
+    height: 63px;
+    border: 1px solid rgba(160, 190, 240, 0.45);
+    box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.cell:hover {
+    filter: brightness(0.91);
+}
+
+.bg-dark-cell  { background-color: rgba(8, 13, 40, 0.38); }
+.bg-light-cell { background-color: rgba(24, 34, 74, 0.28); }
+
+/*Marks*/
+.piece {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 3;
+    background: transparent;
+    padding: 0;
+}
+
+.piece svg {
+    display: block;
+}
+
+.piece-X,
+.piece-O {
+    filter: drop-shadow(0 0 6px rgba(190, 220, 255, 0.22));
+}
+
+.cell.win {
+    box-shadow: inset 0 0 0 1px rgba(225, 242, 255, 0.45);
+}
+
+/*Lobby footer*/
+.lobby-footer {
+    margin-top: 6px;
+    font-family: monospace;
+    font-size: 1rem;
+    color: #333;
+    align-self: flex-start;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0 }
+}
+
+@keyframes popDot {
+  from { opacity: 0 }
+  to   { opacity: 1 }
+}
+
+.win-seg {
+  animation: drawLine 0.55s ease-out forwards;
+}
+
+.win-dot {
+  opacity: 0;
+  animation: popDot 0.3s ease-out forwards;
+}
