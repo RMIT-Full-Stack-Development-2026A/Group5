@@ -1,15 +1,51 @@
-import User from '/user/model.js';
+import User from './user.model.js';
 
-export const UserRepository = {
-    findByEmail: (email)  => User.findOne({ email }),
-    findByUsername: (username) => User.findOne({ username }),
-    findByEmailOrUsername: (identifier) =>
-        User.findOne({ $or: [{ email: identifier }, { username: identifier }] }),
-    findById: (id) => User.findById(id),
-    findAll: () => User.find().sort({ createdAt: -1 }),
-    create: (data) => User.create(data),
-    updateById: (id, data) => User.findByIdAndUpdate(id, data, { new: true }),
-    incFailedLogins: (id) => User.findByIdAndUpdate(id, { $inc: { failedLoginAttempts: 1 } }, { new: true }),
-    resetFailedLogins: (id) => User.findByIdAndUpdate(id, { failedLoginAttempts: 0, lockUntil: null }, { new: true }),
-    setLockUntil: (id, until) => User.findByIdAndUpdate(id, { lockUntil: until }, { new: true }),
-}
+export const findByEmail = (email) => {
+    return User.findOne({ email });
+};
+
+export const findByUsername = (username) => {
+    return User.findOne({ username });
+};
+
+export const findByEmailOrUsername = (identifier) => {
+    return User.findOne({
+        $or: [{ email: identifier }, { username: identifier }]
+    }).select('+passwordHash');
+};
+
+export const findById = (id) => {
+    return User.findById(id);
+};
+
+export const findAll = () => {
+    return User.find().sort({ createdAt: -1 });
+};
+
+export const createUser = (data) => {
+    return User.create(data);
+};
+
+export const updateById = (id, data) => {
+    return User.findByIdAndUpdate(id, data, { new: true });
+};
+
+export const incFailedLogins = (id) => {
+    return User.findByIdAndUpdate(
+        id,
+        { $inc: { failedLoginAttempts: 1 } },
+        { new: true }
+    );
+};
+
+export const resetFailedLogins = (id) => {
+    return User.findByIdAndUpdate(
+        id,
+        { failedLoginAttempts: 0, lockUntil: null },
+        { new: true }
+    );
+};
+
+export const setLockUntil = (id, until) => {
+    return User.findByIdAndUpdate(id, { lockUntil: until }, { new: true });
+};

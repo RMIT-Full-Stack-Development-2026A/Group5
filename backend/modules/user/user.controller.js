@@ -1,26 +1,94 @@
-import { UserService } from './user.service.js';
+import * as userService from './user.service.js';
 import { processAvatar } from './avatar.upload.js';
 
-const handle = (fn) => async (req, res) => {
-    try {
-        await fn(req, res);
-    } catch (error) {
-        res.status(error.status || 500).json({ message: error.message, errors: error.errors }); }
+const handleError = (res, err) => {
+    res.status(err.status || 500).json({
+        message: err.message,
+        errors: err.errors
+    });
 };
 
-export const UserController = {
-    register: handle(async (req, res) => res.status(201).json(await UserService.register(req.body))),
-    login: handle(async (req, res) => res.json(await UserService.login(req.body))),
-    logout: handle(async (req, res) => { await UserService.logout(req.user); res.json({ message: 'Logged out successfully.' }); }),
-    getMe: handle(async (req, res) => res.json(await UserService.getMe(req.user._id))),
-    updateProfile: handle(async (req, res) => res.json(await UserService.updateProfile(req.user._id, req.body))),
-    changePassword: handle(async (req, res) => res.json(await UserService.changePassword(req.user._id, req.body))),
-    uploadAvatar: handle(async (req, res) => {
-        if (!req.file) throw { status: 400, message: 'No file uploaded.' };
-        const avatarURL = await processAvatar(req.file.buffer, req.user.sub);
-        res.json(await UserService.updateAvatar(req.user.sub, avatarURL));
-    }),
-    getAllUsers: handle(async (req, res) => res.json(await UserService.getAllUsers())),
-    setActiveStatus: handle(async (req, res) => 
-        res.json(await UserService.setActiveStatus(req.params.id, req.body.isActive))),
+export const register = async (req, res) => {
+    try {
+        const user = await userService.register(req.body);
+        res.status(201).json(user);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const login = async (req, res) => {
+    try {
+        const result = await userService.login(req.body);
+        res.json(result);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        await userService.logout(req.user);
+        res.json({ message: 'Logged out successfully.' });
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const getMe = async (req, res) => {
+    try {
+        const user = await userService.getById(req.user.sub);
+        res.json(user);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const user = await userService.updateProfile(req.user.sub, req.body);
+        res.json(user);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const changePassword = async (req, res) => {
+    try {
+        const result = await userService.changePassword(req.user.sub, req.body);
+        res.json(result);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const uploadAvatar = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded.' });
+        }
+        const avatarUrl = await processAvatar(req.file.buffer, req.user.sub);
+        const user = await userService.updateAvatar(req.user.sub, avatarUrl);
+        res.json(user);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await userService.getAllUsers();
+        res.json(users);
+    } catch (err) {
+        handleError(res, err);
+    }
+};
+
+export const setActiveStatus = async (req, res) => {
+    try {
+        const user = await userService.setActiveStatus(req.params.id, req.body.isActive);
+        res.json(user);
+    } catch (err) {
+        handleError(res, err);
+    }
 };

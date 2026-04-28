@@ -3,13 +3,19 @@ import RevokedToken from '../modules/user/revokedToken.model.js';
 
 export const authenticate = async (req, res, next) => {
     const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer '))
+
+    if (!header?.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'No token provided.' });
+    }
 
     try {
-        const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
-        if (await RevokedToken.findOne({ jti: decoded.jti }))
-            return res.status(401).json({ message: 'Token revoked. Please log in again' });
+        const token = header.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (await RevokedToken.findOne({ jti: decoded.jti })) {
+            return res.status(401).json({ message: 'Token revoked. Please log in again.' });
+        }
+
         req.user = decoded;
         next();
     } catch {
