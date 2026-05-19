@@ -8,6 +8,7 @@ function HomePage() {
     const [boardSize, setBoardSize] = useState(10);
   return (
     <div className="d-flex justify-content-center p-4 row g-4">
+      <Navbar />
       {/* Left — game board */}
       <GameBoard selectedMode={selectedMode} boardStyle="classic" boardSize={boardSize} />
 

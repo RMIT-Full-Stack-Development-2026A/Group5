@@ -7,7 +7,7 @@ const RegisterForm = ({ onToggle }) => {
     return (
         <div className="auth-card">
             <h2 className="auth-title">Sign Up</h2>
-
+            
             {serverError && <div className="auth-error-banner">{serverError}</div>}
 
             <form onSubmit={handleSubmit}>
