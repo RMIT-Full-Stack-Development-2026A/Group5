@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
 import { getAIMove } from './gameBoardService';
 
-const SIZE = 10;
 const WIN_LENGTH = 5;
-const COLS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 // Converts flat board index → algebraic notation (e.g. index 0 → "a10", index 99 → "j1")
-const toAlgebraic = (index) => {
-    const row = Math.floor(index / SIZE);
-    const col = index % SIZE;
-    return COLS[col] + (SIZE - row);
+const toAlgebraic = (index, boardSize) => {
+    const row = Math.floor(index / boardSize);
+    const col = index % boardSize;
+    return COLS[col] + (boardSize - row);
 };
 
-const checkWinner = (squares) => {
-    const idx = (r, c) => r * SIZE + c;
+const checkWinner = (squares, boardSize) => {
+    const idx = (r, c) => r * boardSize + c;
     const directions = [
         { dr: 0, dc: 1, dir: 'horizontal' },
         { dr: 1, dc: 0, dir: 'vertical' },
@@ -21,8 +20,8 @@ const checkWinner = (squares) => {
         { dr: 1, dc: -1, dir: 'diagonal-left' },
     ];
 
-    for (let r = 0; r < SIZE; r++) {
-        for (let c = 0; c < SIZE; c++) {
+    for (let r = 0; r < boardSize; r++) {
+        for (let c = 0; c < boardSize; c++) {
             const player = squares[idx(r, c)];
             if (!player) continue;
 
@@ -31,7 +30,7 @@ const checkWinner = (squares) => {
                 for (let i = 1; i < WIN_LENGTH; i++) {
                     const nr = r + dr * i;
                     const nc = c + dc * i;
-                    if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) break;
+                    if (nr < 0 || nr >= boardSize || nc < 0 || nc >= boardSize) break;
                     if (squares[idx(nr, nc)] !== player) break;
                     line.push(idx(nr, nc));
                 }
@@ -41,8 +40,8 @@ const checkWinner = (squares) => {
     }
     return null;
 };
-export const useGameBoard = (selectedMode = 'local') => {
-    const [board, setBoard] = useState(Array(SIZE * SIZE).fill(null));
+export const useGameBoard = (selectedMode = 'local', boardSize = 10) => {
+    const [board, setBoard] = useState(Array(boardSize * boardSize).fill(null));
     const [xIsNext, setXIsNext] = useState(true);
     const [winner, setWinner] = useState(null);
     const [winningLine, setWinningLine] = useState([]);
@@ -68,7 +67,7 @@ export const useGameBoard = (selectedMode = 'local') => {
         const newMove = {
             moveNumber: moves.length + 1,
             playerId: player,   // will become actual user _id once auth is wired up
-            algebraicNotation: toAlgebraic(index),
+            algebraicNotation: toAlgebraic(index, boardSize),
             timestamp: now,
             index: index,
         };
@@ -77,7 +76,7 @@ export const useGameBoard = (selectedMode = 'local') => {
         setMoves(prev => [...prev, newMove]);
         setGameStatus('ongoing');
 
-        const winResult = checkWinner(newBoard);
+        const winResult = checkWinner(newBoard, boardSize);
         if (winResult) {
             setWinner(winResult.player);
             setWinningLine(winResult.line);
@@ -111,7 +110,7 @@ export const useGameBoard = (selectedMode = 'local') => {
 
             const timer = setTimeout(() => {
                 // Call the AI move function here
-                getAIMove({ board, selectedMode, lastMove: moves[moves.length - 1].index, boardSize: SIZE })
+                getAIMove({ board, selectedMode, lastMove: moves[moves.length - 1].index, boardSize })
                     .then((aiMove) => {
                         makeMove(aiMove.moveIndex, 'O');
                     })
@@ -133,7 +132,7 @@ export const useGameBoard = (selectedMode = 'local') => {
     };
 
     const resetGame = () => {
-        setBoard(Array(SIZE * SIZE).fill(null));
+        setBoard(Array(boardSize * boardSize).fill(null));
         setXIsNext(true);
         setWinner(null);
         setWinningLine([]);
@@ -146,10 +145,15 @@ export const useGameBoard = (selectedMode = 'local') => {
         setAITurn(false);
     };
 
+    useEffect(() => {
+        setBoard(Array(boardSize * boardSize).fill(null));
+        resetGame();
+    }, [boardSize]);
+
     // Returns a snapshot matching the GAME_SESSION + MOVE structure — ready for backend POST
     const getGameSessionData = () => ({
         gameType: selectedMode,
-        boardSize: '10x10',
+        boardSize: `${boardSize}x${boardSize}`,
         boardStyle: 'default',
         player1Marker: 'X',
         player2Marker: 'O',

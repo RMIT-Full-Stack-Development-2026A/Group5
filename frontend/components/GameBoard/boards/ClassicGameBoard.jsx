@@ -5,13 +5,14 @@ export const ClassicGameBoard = ({
     winningLine,
     winDirection,
     handleCellClick,
+    boardSize,
 }) => {
     return (
-        <div className="board board-classic">
+        <div className="board board-classic" style={{ '--board-size': boardSize }}>
             <div className="board-grid">
                 {board.map((cell, index) => {
-                    const row = Math.floor(index / 10);
-                    const col = index % 10;
+                    const row = Math.floor(index / boardSize);
+                    const col = index % boardSize;
                     const isDark = (row + col) % 2 === 0;
                     const isWin = winningLine.includes(index);
 

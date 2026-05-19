@@ -4,18 +4,38 @@ import {
     drawConstellationWinLine,
     moonMarker,
     starMarker,
-} from './celestialBoardUtils';
+} from '../utils/celestialBoardUtils';
 
 export const CelestialGameBoard = ({
     board,
     winningLine,
     isFinished,
     handleCellClick,
+    boardSize,
 }) => {
     const boardRef = useRef(null);
     const canvasRef = useRef(null);
     const svgRef = useRef(null);
     const cellRefs = useRef([]);
+
+    const getPieceCenter = (cell) => {
+        const marker = cell.querySelector('.piece svg');
+        if (marker?.getBBox && marker?.getScreenCTM && marker?.createSVGPoint) {
+            const bbox = marker.getBBox();
+            const point = marker.createSVGPoint();
+            point.x = bbox.x + bbox.width / 2;
+            point.y = bbox.y + bbox.height / 2;
+            const screenPoint = point.matrixTransform(marker.getScreenCTM());
+            return { x: screenPoint.x, y: screenPoint.y };
+        }
+
+        const fallback = cell.querySelector('.piece') || cell;
+        const rect = fallback.getBoundingClientRect();
+        return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+        };
+    };
 
     useEffect(() => {
         if (!boardRef.current || !canvasRef.current) return;
@@ -50,11 +70,7 @@ export const CelestialGameBoard = ({
                 (idx) => {
                     const cell = cellRefs.current[idx];
                     if (!cell) return { x: 0, y: 0 };
-                    const rect = cell.getBoundingClientRect();
-                    return {
-                        x: rect.left + rect.width / 2,
-                        y: rect.top + rect.height / 2,
-                    };
+                    return getPieceCenter(cell);
                 },
             );
             return;
@@ -66,13 +82,13 @@ export const CelestialGameBoard = ({
     }, [winningLine, isFinished]);
 
     return (
-        <div className="board board-celestial" ref={boardRef}>
+        <div className="board board-celestial" ref={boardRef} style={{ '--board-size': boardSize }}>
             <canvas ref={canvasRef} className="board-bg-canvas" aria-hidden="true" />
 
             <div className="board-grid">
                 {board.map((cell, index) => {
-                    const row = Math.floor(index / 10);
-                    const col = index % 10;
+                    const row = Math.floor(index / boardSize);
+                    const col = index % boardSize;
                     const isDark = (row + col) % 2 === 0;
                     const isWin = winningLine.includes(index);
 
