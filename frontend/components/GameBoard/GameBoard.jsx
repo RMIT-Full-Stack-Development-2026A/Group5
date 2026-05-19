@@ -1,21 +1,22 @@
 import React from 'react';
 import './gameBoard.css';
 import { useGameBoard } from './useGameBoard';
-import { ClassicGameBoard } from './ClassicGameBoard';
-import { CelestialGameBoard } from './CelestialGameBoard';
+import { ClassicGameBoard } from './boards/ClassicGameBoard';
+import { CelestialGameBoard } from './boards/CelestialGameBoard';
+import { ArcaneGameBoard } from './boards/ArcaneGame';
 
 const LOBBY_ID = '1234567';
 
-const GameBoard = ({ selectedMode, boardStyle = 'classic' }) => {
+const GameBoard = ({ selectedMode, boardStyle = 'classic' , boardSize = 10}) => {
     const {
         board, xIsNext, winner, winningLine, winDirection,
         gameStatus,
         handleCellClick, abortGame, resetGame,
-    } = useGameBoard(selectedMode);
+    } = useGameBoard(selectedMode, boardSize);
 
-    const isAborted  = gameStatus === 'aborted';
+    const isAborted = gameStatus === 'aborted';
     const isFinished = gameStatus === 'finished';
-    const isOver     = isFinished || isAborted;
+    const isOver = isFinished || isAborted;
 
     const statusText = isAborted
         ? 'Game aborted — no winner'
@@ -26,8 +27,43 @@ const GameBoard = ({ selectedMode, boardStyle = 'classic' }) => {
     const statusColor = isAborted
         ? 'text-secondary'
         : winner === 'X' ? 'text-danger'
-        : winner === 'O' ? 'text-primary'
-        : 'text-dark';
+            : winner === 'O' ? 'text-primary'
+                : 'text-dark';
+
+    let boardContent;
+
+    if (boardStyle === 'celestial') {
+        boardContent = (
+            <CelestialGameBoard
+                board={board}
+                winningLine={winningLine}
+                isFinished={isFinished}
+                handleCellClick={handleCellClick}
+                boardSize={boardSize}
+            />
+        );
+    } else if (boardStyle === 'classic') {
+        boardContent = (
+            <ClassicGameBoard
+                board={board}
+                winningLine={winningLine}
+                winDirection={winDirection}
+                handleCellClick={handleCellClick}
+                boardSize={boardSize}
+            />
+        );
+    } else if (boardStyle === 'arcane') {
+        boardContent = (
+            <ArcaneGameBoard
+                board={board}
+                winningLine={winningLine}
+                isFinished={isFinished}
+                winner={winner}
+                handleCellClick={handleCellClick}
+                boardSize={boardSize}
+            />
+        );
+    }
 
     return (
         <div className="d-flex flex-column align-items-center py-4 col-lg-8 ">
@@ -49,21 +85,8 @@ const GameBoard = ({ selectedMode, boardStyle = 'classic' }) => {
             </div>
 
             {/* Board */}
-            {boardStyle === 'celestial' ? (
-                <CelestialGameBoard
-                    board={board}
-                    winningLine={winningLine}
-                    isFinished={isFinished}
-                    handleCellClick={handleCellClick}
-                />
-            ) : (
-                <ClassicGameBoard
-                    board={board}
-                    winningLine={winningLine}
-                    winDirection={winDirection}
-                    handleCellClick={handleCellClick}
-                />
-            )}
+            {boardContent}
+
 
             {/* Lobby footer */}
             <div className="lobby-footer text-center">

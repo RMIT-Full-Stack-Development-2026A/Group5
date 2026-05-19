@@ -10,8 +10,11 @@
 }
 
 .board {
+    --board-size: 10;
+    --cell-size: clamp(24px, calc((min(92vw, 920px) - 6px) / var(--board-size)), 63px);
     position: relative;
     width: fit-content;
+    max-width: 100%;
     border: 3px solid #111;
     border-radius: 8px;
     overflow: hidden;
@@ -21,8 +24,82 @@
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: repeat(10, 63px);
-    grid-template-rows: repeat(10, 63px);
+    grid-template-columns: repeat(var(--board-size), var(--cell-size));
+    grid-template-rows: repeat(var(--board-size), var(--cell-size));
+}
+
+
+.board-classic .cell {
+    border: 1px solid #111;
+}
+
+.board-classic .bg-dark-cell {
+    background-color: var(--primary-color);
+}
+
+.board-classic .bg-light-cell {
+    background-color: var(--secondary-color);
+}
+
+.board-classic .piece {
+    font-size: calc(var(--cell-size) * 0.54);
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+    line-height: 1;
+    z-index: 2;
+}
+
+.board-classic .piece-X {
+    color: #6E0000;
+    filter: none;
+}
+
+.board-classic .piece-O {
+    color: #5941C9;
+    filter: none;
+}
+
+.board-classic .cell.win::after {
+    content: '';
+    position: absolute;
+    background-color: #e00;
+    z-index: 1;
+}
+
+.board-classic .cell.win.horizontal::after {
+    top: 50%;
+    left: -2px;
+    right: -2px;
+    height: 5px;
+    transform: translateY(-50%);
+}
+
+.board-classic .cell.win.vertical::after {
+    left: 50%;
+    top: -2px;
+    bottom: -2px;
+    width: 5px;
+    transform: translateX(-50%);
+}
+
+.board-classic .cell.win.diagonal-right::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.board-classic .cell.win.diagonal-left::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(-45deg);
+}
+
+.board-classic .cell.win {
+    box-shadow: none;
 }
 
 .board-bg-canvas {
@@ -46,9 +123,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 63px;
-    height: 63px;
-    border: 1px solid rgba(160, 190, 240, 0.45);
+    width: var(--cell-size);
+    height: var(--cell-size);
+    border: 1px solid #111;
     box-sizing: border-box;
     cursor: pointer;
     position: relative;
@@ -59,14 +136,20 @@
     filter: brightness(0.91);
 }
 
-.bg-dark-cell  { background-color: rgba(8, 13, 40, 0.38); }
-.bg-light-cell { background-color: rgba(24, 34, 74, 0.28); }
+.bg-dark-cell {
+    background-color: var(--primary-color);
+}
+
+.bg-light-cell {
+    background-color: var(--secondary-color);
+}
 
 /*Marks*/
 .piece {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-size: calc(var(--cell-size) * 0.54);
+    font-weight: 900;
+    font-family: Arial, sans-serif;
+    line-height: 1;
     position: relative;
     z-index: 3;
     background: transparent;
@@ -79,11 +162,58 @@
 
 .piece-X,
 .piece-O {
-    filter: drop-shadow(0 0 6px rgba(190, 220, 255, 0.22));
+    filter: none;
+}
+
+.piece-X {
+    color: #6E0000;
+}
+
+.piece-O {
+    color: #5941C9;
 }
 
 .cell.win {
-    box-shadow: inset 0 0 0 1px rgba(225, 242, 255, 0.45);
+    box-shadow: none;
+}
+
+.cell.win::after {
+    content: '';
+    position: absolute;
+    background-color: #e00;
+    z-index: 1;
+}
+
+.cell.win.horizontal::after {
+    top: 50%;
+    left: -2px;
+    right: -2px;
+    height: 5px;
+    transform: translateY(-50%);
+}
+
+.cell.win.vertical::after {
+    left: 50%;
+    top: -2px;
+    bottom: -2px;
+    width: 5px;
+    transform: translateX(-50%);
+}
+
+.cell.win.diagonal-right::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.cell.win.diagonal-left::after {
+    top: 50%;
+    left: -35%;
+    right: -35%;
+    height: 5px;
+    transform: translateY(-50%) rotate(-45deg);
 }
 
 /*Lobby footer*/
@@ -96,19 +226,129 @@
 }
 
 @keyframes drawLine {
-  to { stroke-dashoffset: 0 }
+    to {
+        stroke-dashoffset: 0
+    }
 }
 
 @keyframes popDot {
-  from { opacity: 0 }
-  to   { opacity: 1 }
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
 }
 
 .win-seg {
-  animation: drawLine 0.55s ease-out forwards;
+    animation: drawLine 0.55s ease-out forwards;
 }
 
 .win-dot {
-  opacity: 0;
-  animation: popDot 0.3s ease-out forwards;
+    opacity: 0;
+    animation: popDot 0.3s ease-out forwards;
+}
+
+@keyframes drawSigil {
+    to {
+        stroke-dashoffset: 0
+    }
+}
+
+@keyframes sigilFade {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@keyframes drawWin {
+    to {
+        stroke-dashoffset: 0
+    }
+}
+
+@keyframes winIn {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+.sgl {
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    animation: drawSigil 0.85s ease-out forwards;
+}
+
+.sglf {
+    opacity: 0;
+    animation: sigilFade 0.5s ease-out forwards;
+}
+
+.sgd {
+    opacity: 0;
+    animation: sigilFade 0.2s ease-out forwards;
+}
+
+.win-seg {
+    animation: drawWin 0.55s ease-out forwards;
+}
+
+.win-nd {
+    opacity: 0;
+    animation: winIn 0.3s ease-out forwards;
+}
+
+.board-celestial .cell {
+    border: 1px solid rgba(160, 190, 240, 0.45);
+}
+
+.board-celestial .bg-dark-cell {
+    background-color: rgba(8, 13, 40, 0.38);
+}
+
+.board-celestial .bg-light-cell {
+    background-color: rgba(24, 34, 74, 0.28);
+}
+
+.board-celestial .piece {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 6px rgba(190, 220, 255, 0.22));
+}
+
+.board-celestial .piece-X,
+.board-celestial .piece-O {
+    filter: drop-shadow(0 0 6px rgba(190, 220, 255, 0.22));
+}
+
+.board-celestial .cell.win {
+    box-shadow: inset 0 0 0 1px rgba(225, 242, 255, 0.45);
+}
+
+.board-arcane .cell {
+    border: 1px solid rgba(70, 40, 110, 0.55);
+}
+
+.board-arcane .bg-dark-cell {
+    background-color: rgba(12, 8, 24, 0.72);
+}
+
+.board-arcane .bg-light-cell {
+    background-color: rgba(25, 16, 42, 0.72);
+}
+
+.board-arcane .piece {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }

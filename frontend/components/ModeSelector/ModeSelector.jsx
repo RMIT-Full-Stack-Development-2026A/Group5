@@ -1,10 +1,12 @@
 import './modeSelector.css';
-export default function ModeSelector({ onSelectMode }) {
+import { useState } from 'react';
+export default function ModeSelector({ onSelectMode, onBoardSizeChange }) {
+
     return (
         <div className="col-lg-4 mt-5">
             <div className="d-flex justify-content-between gap-3 mb-4 pe-5 mt-5">
-                <button className="rounded-pill  px-4 py-2 w-25">10x10</button>
-                <button className="rounded-pill  px-4 py-2 w-25">15x15</button>
+                <button className="rounded-pill  px-4 py-2 w-25" onClick={() => onBoardSizeChange(10)}>10x10</button>
+                <button className="rounded-pill  px-4 py-2 w-25" onClick={() => onBoardSizeChange(15)}>15x15</button>
             </div>
             <div className="mode-selector me-5 d-flex flex-column align-items-center rounded-4 pb-5 ">
                 <h2 className="mt-4 fw-bold fs-3">Select Game Mode</h2>
