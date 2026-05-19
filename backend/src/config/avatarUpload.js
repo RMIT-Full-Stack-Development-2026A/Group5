@@ -14,7 +14,7 @@ export const upload = multer({ storage: multer.memoryStorage(), limits: { fileSi
 
 // Resize to standard 200x200 and save
 export const processAvatar = async (buffer, userID) => {
-    const filename = 'avatar_$(userID)_$(Date.now()).webp';
+    const filename = `avatar_${userID}_${Date.now()}.webp`;
     const outputPath = path.join(UPLOAD_DIR, filename);
 
     await sharp(buffer)

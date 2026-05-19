@@ -1,5 +1,5 @@
 import mongoose from "mongoose"
-
+import COUNTRIES from "../../../config/countries.js";
 const playerSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -21,6 +21,19 @@ const playerSchema = new mongoose.Schema({
         type: String,
         enum: ['player', 'admin'],
         default: 'player',
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+    country: {
+        type: String,
+        enum: COUNTRIES,
+        required: true,
+    },
+    avatarUrl: {
+        type: String,
+        default: null,
     },
 
 })

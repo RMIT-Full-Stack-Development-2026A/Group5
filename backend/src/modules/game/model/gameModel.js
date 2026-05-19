@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
-const matchSchema = new mongoose.Schema({
-    // "Match ID - 0000001" in UI
-    matchNumber: { type: Number, required: true, unique: true },
+const gameSchema = new mongoose.Schema({
+    // "Game ID - 0000001" in UI
+    gameNumber: { type: Number, required: true, unique: true },
 
     // "Game Mode: Single / Two Players / Online Match"
     gameMode: { type: String, enum: ['single', 'two_player', 'online'], required: true },
@@ -34,13 +34,13 @@ const matchSchema = new mongoose.Schema({
 
 { timestamps: true });   
 
-// Auto-increment matchNumber
-matchSchema.pre('save', async function (next) {
+// Auto-increment gameNumber
+gameSchema.pre('save', async function (next) {
     if (this.isNew) {
-        const last = await this.constructor.findOne().sort({ matchNumber: -1 });
-        this.matchNumber = last ? last.matchNumber + 1 : 1;
+        const last = await this.constructor.findOne().sort({ gameNumber: -1 });
+        this.gameNumber = last ? last.gameNumber + 1 : 1;
     }
     next();
 });
 
-export default mongoose.model('Match', matchSchema);
+export default mongoose.model('Game', gameSchema);
