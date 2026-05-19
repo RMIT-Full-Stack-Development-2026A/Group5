@@ -1,4 +1,4 @@
-export default COUNTRIES = [
+export default [
     'Australia', 'Brazil', 'Canada', 'China', 'Denmark',
     'Egypt', 'Finland', 'France', 'Germany', 'India',
     'Indonesia', 'Italy', 'Japan', 'Malaysia', 'Mexico',
