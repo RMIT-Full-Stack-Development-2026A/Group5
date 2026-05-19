@@ -1,4 +1,4 @@
-export const COUNTRIES = [
+export default COUNTRIES = [
     'Australia', 'Brazil', 'Canada', 'China', 'Denmark',
     'Egypt', 'Finland', 'France', 'Germany', 'India',
     'Indonesia', 'Italy', 'Japan', 'Malaysia', 'Mexico',
