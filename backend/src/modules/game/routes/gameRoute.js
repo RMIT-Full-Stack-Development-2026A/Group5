@@ -1,9 +1,17 @@
 import express from 'express';
-import { getMove } from '../controllers/gameController.js';
+import { getAIMove, createGameSession, getUserSessions, getGameSessionById, createGameRoom, joinGameRoom, listRooms, closeGameRoom } from '../controllers/gameController.js';
+import { authenticate } from '../../middleware/authMiddleware.js';
+import { requireRole } from '../../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-// Route to get the AI's move based on the current board state
-router.post('/ai/move', getMove);
+router.post('/ai/move', getAIMove);
+router.post('/sessions', authenticate, createGameSession);
+router.get('/sessions', authenticate, getUserSessions);
+router.get('/sessions/:id', authenticate, getGameSessionById);
+router.post('/rooms', authenticate, createGameRoom);
+router.patch('/rooms/:id/join', authenticate, joinGameRoom);
+router.get('/rooms', authenticate, listRooms);
+router.patch('/rooms/:id/close', authenticate, requireRole('admin'), closeGameRoom);
 
 export default router;

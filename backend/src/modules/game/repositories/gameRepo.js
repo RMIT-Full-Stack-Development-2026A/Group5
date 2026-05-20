@@ -1,28 +1,26 @@
 import Game from '../model/gameModel.js';
 
 export const gameRepository = {
-    // search by gameNumber or opponent name
-    findByPlayer: async (playerId, { search = '', page = 1, limit = 5, sortOrder = 'desc', result = null, gameMode = null, startDate = null, endDate = null }) => {
+    findByPlayer: async (playerId, { search = '', page = 1, limit = 10, sortOrder = 'desc', result = null, gameType = null, startDate = null, endDate = null } = {}) => {
         const query = {
-            $or: [{ player1: playerId }, { player2Id: playerId }],
+            $or: [{ player1Id: playerId }, { player2Id: playerId }],
         };
 
-        // case-insensitive pattern search on gameNumber or player2Name
         if (search) {
-            const num = parseInt(search);
+            const regex = { $regex: search, $options: 'i' };
             query.$and = [{
                 $or: [
-                ...(num ? [{ gameNumber: num }] : []),
-                { player2Name: { $regex: search, $options: 'i' } },
+                    { gameNumber: parseInt(search) || -1 },
+                    { roomNumber: regex },
+                    { player1Name: regex },
+                    { player2Name: regex },
                 ],
             }];
         }
 
-        // filter by result and gameMode
-        if (result)   query.result   = result;
-        if (gameMode) query.gameMode = gameMode;
+        if (result) query.result = result;
+        if (gameType) query.gameType = gameType;
 
-        // filter by date range
         if (startDate || endDate) {
             query.startTime = {};
             if (startDate) query.startTime.$gte = new Date(startDate);
@@ -33,15 +31,40 @@ export const gameRepository = {
         const games = await Game.find(query)
             .sort({ startTime: sortOrder === 'asc' ? 1 : -1 })
             .skip((page - 1) * limit)
-            .limit(limit)
-            .populate('player1', 'username avatarUrl')
-            .populate('player2Id', 'username avatarUrl');
+            .limit(limit);
 
         return { games, total, page, totalPages: Math.ceil(total / limit) };
     },
 
-    findById: (id) => Game.findById(id).populate('player1 player2Id', 'username avatarUrl'),
+    findById: (id) => Game.findById(id),
     create: (data) => Game.create(data),
     updateById: (id, data) => Game.findByIdAndUpdate(id, data, { new: true }),
-    findAll: () => Game.find().sort({ startTime: -1 }) .populate('player1 player2Id', 'username'),
+    findAll: () => Game.find().sort({ startTime: -1 }),
+    findActiveRooms: ({ search = '', page = 1, limit = 10, sortOrder = 'desc' } = {}) => {
+        const query = { isActive: true };
+        if (search) {
+            const regex = { $regex: search, $options: 'i' };
+            query.$or = [
+                { roomNumber: regex },
+                { player1Name: regex },
+                { player2Name: regex },
+            ];
+        }
+        return Game.find(query)
+            .sort({ startTime: sortOrder === 'asc' ? 1 : -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+    },
+    countActiveRooms: ({ search = '' } = {}) => {
+        const query = { isActive: true };
+        if (search) {
+            const regex = { $regex: search, $options: 'i' };
+            query.$or = [
+                { roomNumber: regex },
+                { player1Name: regex },
+                { player2Name: regex },
+            ];
+        }
+        return Game.countDocuments(query);
+    },
 };
