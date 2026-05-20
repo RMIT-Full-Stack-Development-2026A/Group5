@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getAIMove } from './gameBoardService';
+import { useGameStatus } from '../../config/context/GameStatusContext';
 
 const WIN_LENGTH = 5;
 const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -41,13 +42,13 @@ const checkWinner = (squares, boardSize) => {
     return null;
 };
 export const useGameBoard = (selectedMode = 'local', boardSize = 10) => {
+    const { gameStatus, setGameStatus } = useGameStatus();
     const [board, setBoard] = useState(Array(boardSize * boardSize).fill(null));
     const [xIsNext, setXIsNext] = useState(true);
     const [winner, setWinner] = useState(null);
     const [winningLine, setWinningLine] = useState([]);
     const [winDirection, setWinDirection] = useState(null);
 
-    const [gameStatus, setGameStatus] = useState('waiting');  // waiting | ongoing | finished | aborted
     const [result, setResult] = useState(null);        // null | 'X_wins' | 'O_wins' | 'aborted'
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
@@ -55,6 +56,7 @@ export const useGameBoard = (selectedMode = 'local', boardSize = 10) => {
 
 
     const [moves, setMoves] = useState([]);
+
 
     const makeMove = (index, player) => {
         const now = new Date();
@@ -147,7 +149,6 @@ export const useGameBoard = (selectedMode = 'local', boardSize = 10) => {
 
     useEffect(() => {
         setBoard(Array(boardSize * boardSize).fill(null));
-        resetGame();
     }, [boardSize]);
 
     // Returns a snapshot matching the GAME_SESSION + MOVE structure — ready for backend POST
@@ -157,7 +158,6 @@ export const useGameBoard = (selectedMode = 'local', boardSize = 10) => {
         boardStyle: 'default',
         player1Marker: 'X',
         player2Marker: 'O',
-        gameStatus,
         result,
         startTime,
         endTime,

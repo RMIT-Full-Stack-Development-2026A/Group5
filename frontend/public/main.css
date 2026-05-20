@@ -19,12 +19,35 @@ body {
     box-sizing: border-box;
 }
 
-button {
-    background-color: var(--secondary-color)
+.btn {
+    background-color: var(--secondary-color);
+    color: black;
 }
-button:hover {
+
+.btn:hover {
     background-color: var(--btn-hover);
 }
-button.active {
+
+.btn:active {
     background-color: var(--btn-active);
+    color: black;
+}
+
+.btn:disabled {
+    background-color: var(--primary-color);
+    color: #999;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    background-color: var(--primary-color);
+}
+
+.btn.active:disabled {
+    background-color: var(--btn-active);
+    color: white;
+    cursor: not-allowed;
+}
+.card {
+    background-color: #FFF5F5;
 }

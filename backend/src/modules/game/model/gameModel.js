@@ -2,37 +2,57 @@ import mongoose from 'mongoose';
 
 const gameSchema = new mongoose.Schema({
     // "Game ID - 0000001" in UI
-    gameNumber: { type: Number, required: true, unique: true },
+    gameID: {
+        type: Number,
+        required: true,
+        unique: true,
+    },
+    player1: {
+        type: String,
+        required: true,
+    },
+    player2: {
+        type: String,
+        required: true,
+    },
+    result: {
+        type: String,
+        enum: ['player1', 'player2', 'draw', 'aborted'],
+        required: true,
+    },
+    moves: [
+        {
+            index: {
+                type: Number,
+                required: true,
+            },
+            player: {
+                type: String,
+                enum: ['player1', 'player2'],
+                required: true,
+            },
+            position: {
+                type: Number,
+                required: true,
+            },
+            timestamp: {
+                type: Date,
+                default: Date.now,
+            },
+        },
+    ],
+    gameType: {
+        type: String,
+        enum: ['local', 'online', 'ai'],
+        required: true,
+    },
+    boardSize: {
+        type: String,
+        enum: ['10x10', '15x15'],
+        required: true
+    },
 
-    // "Game Mode: Single / Two Players / Online Match"
-    gameMode: { type: String, enum: ['single', 'two_player', 'online'], required: true },
-
-    // "10 x 10" or "15 x 15"
-    boardSize: { type: Number, enum: [10, 15], default: 10 },
-
-    player1: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-
-    // For single player: store AI bot name as string; for multiplayer: ObjectId ref
-    player2Id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    player2Name: { type: String, default: null }, // "Opponent: name or AI mode"
-
-    winner: {type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-
-    // "Status: Won / Lost / Aborted"
-    result: { type: String, enum: ['win', 'lose', 'draw', 'aborted'], required: true },
-
-    startTime: { type: Date, required: true },
-    endTime: { type: Date, default: null },
-
-    // Replay Feature
-    moves: [{
-        player: { type: String }, // 'player1' | 'player2'
-        position: { type: String }, // algebraic notation e.g. "c2"
-        timestamp: { type: Date },
-    }],
-}, 
-
-{ timestamps: true });   
+    })
 
 // Auto-increment gameNumber
 gameSchema.pre('save', async function (next) {

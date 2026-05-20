@@ -4,4 +4,5 @@ export const AUTH_ENDPOINTS = {
     register: '/auth/register',
     login:    '/auth/login',
     logout:   '/auth/logout',
+    aimove:  '/game/ai/move',
 };

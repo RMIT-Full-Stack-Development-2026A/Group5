@@ -24,6 +24,3 @@ app.use('/api/auth', authRouter);
         console.log(`Backend listening on http://localhost:${PORT}`);
     });
 })();
-
-
-
