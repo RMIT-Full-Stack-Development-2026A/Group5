@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/dbConnection.js'
 import gameRouter from './modules/game/routes/gameRoute.js';
+import sessionRouter from './modules/game/routes/sessionRoute.js';
 import authRouter from './modules/auth/routes/authRoute.js';
 
 const app = express();
@@ -16,6 +17,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/game', gameRouter);
+app.use('/api/game/session', sessionRouter);
 app.use('/api/auth', authRouter);
 
 (async () => {

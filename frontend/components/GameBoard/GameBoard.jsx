@@ -1,19 +1,71 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import './gameBoard.css';
 import { useGameBoard } from './useGameBoard';
 import { ClassicGameBoard } from './boards/ClassicGameBoard';
 import { CelestialGameBoard } from './boards/CelestialGameBoard';
 import { ArcaneGameBoard } from './boards/ArcaneGame';
+import { gameSessionService } from '../../services/gameSessionService';
 
 
-const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameId, opponentName }) => {
+const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameId, gameNumber, opponentName }) => {
     const {
         board, xIsNext, winner, winningLine, winDirection,
-        gameStatus,
+        gameStatus, moves,
         handleCellClick, abortGame, resetGame,
     } = useGameBoard(selectedMode, boardSize);
 
-    const LOBBY_ID = '1234567';
+    const LOBBY_ID = gameNumber ? String(gameNumber).padStart(7, '0') : '1234567';
+
+    // Persist each new move to the backend as it happens.
+    const sentMoveCountRef = useRef(0);
+    useEffect(() => {
+        if (!gameId) return;
+        if (moves.length <= sentMoveCountRef.current) return;
+
+        const pending = moves.slice(sentMoveCountRef.current);
+        sentMoveCountRef.current = moves.length;
+
+        (async () => {
+            for (const m of pending) {
+                try {
+                    await gameSessionService.recordMove(gameId, {
+                        playerSlot: m.playerId === 'X' ? 'player1' : 'player2',
+                        position:   m.index,
+                        notation:   m.algebraicNotation,
+                    });
+                } catch (err) {
+                    console.error('Failed to record move', err);
+                }
+            }
+        })();
+    }, [moves, gameId]);
+
+    // Persist game result on finish / abort.
+    const finalizedRef = useRef(false);
+    useEffect(() => {
+        if (!gameId) return;
+        if (finalizedRef.current) return;
+
+        if (gameStatus === 'finished' && winner) {
+            finalizedRef.current = true;
+            gameSessionService.finish(gameId, {
+                result: winner === 'X' ? 'player1' : 'player2',
+                winLine: winningLine,
+            }).catch((err) => console.error('Failed to finish match', err));
+        } else if (gameStatus === 'aborted') {
+            finalizedRef.current = true;
+            gameSessionService.abort(gameId).catch((err) =>
+                console.error('Failed to abort match', err));
+        }
+    }, [gameStatus, winner, winningLine, gameId]);
+
+    // Allow a fresh game/reset to be recorded again
+    useEffect(() => {
+        if (gameStatus === 'waiting') {
+            finalizedRef.current = false;
+            sentMoveCountRef.current = 0;
+        }
+    }, [gameStatus]);
 
     const isAborted = gameStatus === 'aborted';
     const isFinished = gameStatus === 'finished';

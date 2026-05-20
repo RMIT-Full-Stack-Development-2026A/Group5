@@ -3,6 +3,7 @@ import Nav from "../../components/Navbar/Navbar";
 import HomePage from '../../pages/HomePage/HomePage';
 import ProfilePage from '../../pages/Profile/Profile';
 import Login from '../../pages/Login/Login.jsx'
+import Replay from '../../pages/Replay/Replay.jsx';
 import { getToken } from "../../services/httpService.js";
 
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
             {
                 path: "profile",
                 element: <ProfilePage />
+            },
+            {
+                path: "replay/:id",
+                element: <Replay />
             }
         ]
     },

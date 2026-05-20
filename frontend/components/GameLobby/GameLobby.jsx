@@ -1,8 +1,15 @@
 import { useGameStatus } from '../../config/context/GameStatusContext';
 import './GameLobby.css';
 
-export default function GameLobby({selectedMode = 'local', opponentName = 'AI', onChangeOpponentName}) {
+export default function GameLobby({selectedMode = 'local', opponentName = 'AI', onChangeOpponentName, onStart}) {
     const { setGameStatus } = useGameStatus();
+
+    const handleStart = async () => {
+        if (onStart) {
+            await onStart();
+        }
+        setGameStatus('ongoing');
+    };
 
     if (selectedMode === 'local' || selectedMode === 'easy' || selectedMode === 'medium' || selectedMode === 'hard') {
         return (
@@ -17,7 +24,7 @@ export default function GameLobby({selectedMode = 'local', opponentName = 'AI', 
                         <p>{opponentName}</p>
                     )}
                 </div>
-                <button className="start-game-btn" onClick={() => setGameStatus('ongoing')}>Start Game</button>
+                <button className="start-game-btn" onClick={handleStart}>Start Game</button>
             </div>
         )
     }
@@ -29,7 +36,7 @@ export default function GameLobby({selectedMode = 'local', opponentName = 'AI', 
                     <p>P1: You</p>
                     <p>P2: {opponentName || 'Waiting for opponent...'}</p>
                 </div>
-                <button className="start-game-btn" onClick={() => setGameStatus('ongoing')}>Start Game</button>
+                <button className="start-game-btn" onClick={handleStart}>Start Game</button>
             </div>
         )
     }

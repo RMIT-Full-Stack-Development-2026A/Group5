@@ -6,3 +6,12 @@ export const AUTH_ENDPOINTS = {
     logout:   '/auth/logout',
     aimove:  '/game/ai/move',
 };
+
+export const SESSION_ENDPOINTS = {
+    start:    '/game/session/start',
+    history:  '/game/session/history',
+    byId:     (id) => `/game/session/${id}`,
+    move:     (id) => `/game/session/${id}/move`,
+    finish:   (id) => `/game/session/${id}/finish`,
+    abort:    (id) => `/game/session/${id}/abort`,
+};

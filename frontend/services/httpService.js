@@ -25,5 +25,15 @@ export const http = {
     const data = await res.json();
     if (!res.ok) throw { message: data.message, status: res.status };
     return data;
+    },
+    patch: async (url, body) => {
+        const res = await fetch(`${API_BASE}${url}`, {
+            method: 'PATCH',
+            headers: buildHeaders(),
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw { message: data.message, status: res.status };
+        return data;
     }
 };

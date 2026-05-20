@@ -4,32 +4,73 @@ import ModeSelector from '../../components/ModeSelector/ModeSelector';
 import Navbar from '../../components/Navbar/Navbar';
 import GameLobby from '../../components/GameLobby/GameLobby';
 import { GameStatusProvider, useGameStatus } from '../../config/context/GameStatusContext';
+import { gameSessionService } from '../../services/gameSessionService';
+
+
+const AI_MODES = ['easy', 'medium', 'hard'];
+
+const toSessionPayload = (selectedMode, boardSize, opponentName) => {
+  if (AI_MODES.includes(selectedMode)) {
+    return {
+      gameType:    'ai',
+      aiLevel:     selectedMode,
+      boardSize:   `${boardSize}x${boardSize}`,
+      boardStyle:  'classic',
+    };
+  }
+  return {
+    gameType:    selectedMode,
+    boardSize:   `${boardSize}x${boardSize}`,
+    boardStyle:  'classic',
+    player2Name: opponentName || null,
+  };
+};
 
 
 function HomePageContent() {
   const [selectedMode, setSelectedMode] = useState('easy');
   const [boardSize, setBoardSize] = useState(10);
-  const [gameId, setGameId] = useState(null);
+  const [matchId, setMatchId] = useState(null);
+  const [gameNumber, setGameNumber] = useState(null);
   const { gameStatus } = useGameStatus();
 
   const [opponentName, setOpponentName] = useState("");
   useEffect(() => {
     if (selectedMode === 'easy') {
-      setOpponentName("Jeremy");
+      setOpponentName("Easy AI");
     } else if (selectedMode === 'medium') {
-      setOpponentName("Morgan");
+      setOpponentName("Medium AI");
     } else if (selectedMode === 'hard') {
-      setOpponentName("404 not found");
+      setOpponentName("Hard AI");
     }
   }, [selectedMode]);
+
+  // Reset matchId whenever we return to the lobby
+  useEffect(() => {
+    if (gameStatus === 'waiting') {
+      setMatchId(null);
+      setGameNumber(null);
+    }
+  }, [gameStatus]);
+
+  const handleStart = async () => {
+    try {
+      const payload = toSessionPayload(selectedMode, boardSize, opponentName);
+      const { matchId: id, gameNumber: num } = await gameSessionService.start(payload);
+      setMatchId(id);
+      setGameNumber(num);
+    } catch (err) {
+      console.error('Failed to start match', err);
+    }
+  };
 
   return (
     <div className="d-flex justify-content-center p-4 row g-4">
       {/* Left — game board */}
       {gameStatus === 'waiting' ? (
-        <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} />
+        <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} onStart={handleStart} />
       ) : (
-        <GameBoard selectedMode={selectedMode} boardStyle="classic" boardSize={boardSize} gameId={gameId} opponentName={opponentName} />
+        <GameBoard selectedMode={selectedMode} boardStyle="classic" boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
       )}
 
       {/* Right — mode selector */}
