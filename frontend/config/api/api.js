@@ -7,6 +7,11 @@ export const AUTH_ENDPOINTS = {
     aimove:  '/game/ai/move',
 };
 
+export const PROFILE_ENDPOINTS = {
+    me:        '/profile/me',
+    password:  '/profile/me/password',
+};
+
 export const SESSION_ENDPOINTS = {
     start:    '/game/session/start',
     history:  '/game/session/history',

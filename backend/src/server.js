@@ -5,6 +5,7 @@ import { connectDB } from './config/dbConnection.js'
 import gameRouter from './modules/game/routes/gameRoute.js';
 import sessionRouter from './modules/game/routes/sessionRoute.js';
 import authRouter from './modules/auth/routes/authRoute.js';
+import playerRouter from './modules/player/routes/playerRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +20,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/game', gameRouter);
 app.use('/api/game/session', sessionRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/profile', playerRouter);
 
 (async () => {
     await connectDB();

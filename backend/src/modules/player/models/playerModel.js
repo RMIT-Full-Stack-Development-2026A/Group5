@@ -15,12 +15,21 @@ const playerSchema = new mongoose.Schema({
     },
     passwordHash: {
         type: String,
-        required: true, 
+        required: true,
     },
     role: {
         type: String,
         enum: ['player', 'admin'],
         default: 'player',
+    },
+    country: {
+        type: String,
+        enum: COUNTRIES,
+        default: null,
+    },
+    avatarUrl: {
+        type: String,
+        default: null,
     },
 
 })

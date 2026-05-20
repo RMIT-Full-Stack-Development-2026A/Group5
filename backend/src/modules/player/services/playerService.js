@@ -1,100 +1,98 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
-import { UserRepository } from './user.repository.js';
-import { toPublicUserDTO } from './user.dto.js';
-import RevokedToken from './revokedToken.model.js';
-import { validateRegistration } from './user.validator';
+import { playerRepository } from '../repositories/playerRepo.js';
+import COUNTRIES from '../../../config/countries.js';
 
-export const UserService = {
 
-    async register(data) {
-        const errors = validateRegistration(data);
-        if (errors.length) throw { status: 400, errors };
+const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,20}$/;
+const EMAIL_REGEX    = /^[^\s@()]+@[^\s@()]+\.[^\s@()]+$/;
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
 
-        const { username, email, password, country } = data;
-        if (await UserRepository.findByEmail(email))
-            throw { status: 409, errors: [{ field: 'email', message: 'Email already registered.' }] };
-        if (await UserRepository.findByUsername(username))
-            throw { status: 409, errors: [{ field: 'username', message: 'Username taken.' }] };
 
-        const passwordHash = await bcrypt.hash(password, 12);
-        const user = await UserRepository.create({ username, email, passwordHash, country });
-        return toPublicUserDTO(user);
+const createError = (message, statusCode) => {
+    const err = new Error(message);
+    err.statusCode = statusCode;
+    return err;
+};
+
+
+const toPublic = (player) => ({
+    id:        player._id,
+    username:  player.username,
+    email:     player.email,
+    country:   player.country,
+    avatarUrl: player.avatarUrl,
+    role:      player.role,
+});
+
+
+export const playerService = {
+
+    getProfile: async (userId) => {
+        const player = await playerRepository.findById(userId);
+        if (!player) throw createError('Player not found', 404);
+        return toPublic(player);
     },
 
-    async login({ identifier, password }) {
-        const user = await UserRepository.findByEmailOrUsername(identifier);
-        if (!user) throw { status: 401, message: 'Invalid credentials.' };
-        if (!user.isActive) throw { status: 403, message: 'Account has been deactivated.' };
+    updateProfile: async (userId, { email, username, country }) => {
+        const update = {};
 
-        if (user.lockUntil && user.lockUntil > new Date())
-            throw { status: 429, message: `Account locked. Try again after ${user.lockUntil.toISOString()}.` };
-
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) {
-            await UserRepository.incFailedLogins(user._id);
-            const updated = await UserRepository.findById(user._id);
-            if (updated.failedLoginAttempts >= 5)
-                await UserRepository.setLockUntil(user._id, new Date(Date.now() + 60_000));
-            throw { status: 401, message: 'Invalid credentials.' };
+        if (email !== undefined) {
+            if (!EMAIL_REGEX.test(email)) {
+                throw createError('Invalid email format. Example: name@example.com', 400);
+            }
+            const existing = await playerRepository.findByEmail(email);
+            if (existing && String(existing._id) !== String(userId)) {
+                throw createError('Email is already registered', 409);
+            }
+            update.email = email;
         }
-    
-        await UserRepository.resetFailedLogins(user._id);
 
-        const jti = uuidv4();
-        const token = jwt.sign(
-            { sub: user._id, role: user.role, jti },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN }
-        );
+        if (username !== undefined) {
+            if (!USERNAME_REGEX.test(username)) {
+                throw createError('Username must be 3-20 chars: letters, numbers, _ or -', 400);
+            }
+            const existing = await playerRepository.findByUsername(username);
+            if (existing && String(existing._id) !== String(userId)) {
+                throw createError('Username is already taken', 409);
+            }
+            update.username = username;
+        }
 
-        return { token, user: toPublicUserDTO(user) };
+        if (country !== undefined) {
+            if (country !== null && !COUNTRIES.includes(country)) {
+                throw createError('Invalid country', 400);
+            }
+            update.country = country;
+        }
+
+        if (Object.keys(update).length === 0) {
+            throw createError('No fields to update', 400);
+        }
+
+        const player = await playerRepository.updateById(userId, update);
+        return toPublic(player);
     },
 
-    async logout(decoded) {
-        const expiresAt = new Date(decoded.exp * 1000);
-        await RevokedToken.create({ jti: decoded.jti, expiresAt });
-    },
+    changePassword: async (userId, { currentPassword, newPassword, confirmPassword }) => {
+        if (!currentPassword || !newPassword) {
+            throw createError('Current and new password are required', 400);
+        }
+        if (newPassword !== confirmPassword) {
+            throw createError('New passwords do not match', 400);
+        }
+        if (!PASSWORD_REGEX.test(newPassword)) {
+            throw createError('Password must be at least 8 chars with 1 uppercase, 1 number, and 1 special character (!@#$%^&*)', 400);
+        }
 
-    async updateProfile(userId, data) {
-        const allowed = ['username', 'email', 'country'];
-        const update = Object.fromEntries(Object.entries(data).filter(([k]) => allowed.includes(k)));
-        const user = await UserRepository.updateById(userId, update);
-        return toPublicUserDTO(user);
-    },
+        const player = await playerRepository.findByIdWithPassword(userId);
+        if (!player) throw createError('Player not found', 404);
 
-    async changePassword(userId, { currentPassword, newPassword, confirmNewPassword }) {
-        if (newPassword !== confirmNewPassword)
-            throw { status: 400, message: 'Passwords do not match.' };
+        const ok = await bcrypt.compare(currentPassword, player.passwordHash);
+        if (!ok) throw createError('Current password is incorrect', 401);
 
-        const user = await UserRepository.findById(userId);
-        const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!valid) throw { status: 401, message: 'Current password is incorrect.' };
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await playerRepository.updateById(userId, { passwordHash });
 
-        const passwordHash = await bcrypt.hash(newPassword, 12);
-        await UserRepository.updateById(userId, { passwordHash });
-        return { message: 'Password changed successfully.' };
-    },
-
-    async updateAvatar(userId, avatarUrl) {
-        const user = await UserRepository.updateById(userId, { avatarUrl });
-        return toPublicUserDTO(user);
-    },
-
-    async getById(id) {
-        const user = await UserRepository.findById(id);
-        if (!user) throw { status: 404, message: 'User not found.' };
-        return toPublicUserDTO(user);
-    },
-
-    async getAllUsers() {
-        const users = await UserRepository.findAll();
-        return users.map(toPublicUserDTO);
-    },
-
-    async setActiveStatus(targetId, isActive) {
-        const user = await UserRepository.updateById(targetId, { isActive });
-        return toPublicUserDTO(user);
+        return { message: 'Password updated successfully' };
     },
 };
