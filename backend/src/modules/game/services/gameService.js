@@ -126,10 +126,14 @@ const findWinningMove = (board, boardSize, player) => {
         if (board[i] === null) {
 
             for (const { dr, dc } of directions) {
-                const { count } = evaluateLine(board, i, player, dr, dc, boardSize)
+                const { count, openEnds } = evaluateLine(board, i, player, dr, dc, boardSize)
                 if (count >= 5) {
                     return i;
                 }
+                else if (count === 4 && openEnds === 2) {
+                    return i;
+                }
+                
             }
         }
     }

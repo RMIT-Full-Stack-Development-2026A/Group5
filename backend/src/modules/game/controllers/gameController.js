@@ -56,7 +56,6 @@ export const recordMove = async (req, res) => {
     }
 };
 
-
 export const finishGame = async (req, res) => {
     try {
         const session = await sessionService.finishGame(req.params.id, req.user.id, req.body);
