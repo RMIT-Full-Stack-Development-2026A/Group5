@@ -1,0 +1,32 @@
+export const toGameSessionDTO = (game) => ({
+    id: game._id,
+    gameNumber: game.gameNumber,
+    roomNumber: game.roomNumber,
+    player1Name: game.player1Name,
+    player2Name: game.player2Name,
+    player1Marker: game.player1Marker,
+    player2Marker: game.player2Marker,
+    gameType: game.gameType,
+    boardSize: game.boardSize,
+    boardStyle: game.boardStyle,
+    result: game.result,
+    isActive: game.isActive,
+    startTime: game.startTime,
+    endTime: game.endTime,
+    moves: game.moves,
+    createdAt: game.createdAt,
+    updatedAt: game.updatedAt,
+});
+
+export const toRoomDTO = (game) => ({
+    id: game._id,
+    gameNumber: game.gameNumber,
+    roomNumber: game.roomNumber,
+    player1Name: game.player1Name,
+    player2Name: game.player2Name,
+    gameType: game.gameType,
+    boardSize: game.boardSize,
+    startTime: game.startTime,
+    endTime: game.endTime,
+    isActive: game.isActive,
+});

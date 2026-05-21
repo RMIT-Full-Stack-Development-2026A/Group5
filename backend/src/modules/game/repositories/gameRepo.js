@@ -93,7 +93,16 @@ export const gameRepository = {
 
         return Game.find(query)
             .sort({ startTime: sortOrder === 'asc' ? 1 : -1 })
-            .populate('player1', 'username')
-            .populate('player2', 'username');
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .populate('player1', 'username avatarUrl')
+            .populate('player2Id', 'username avatarUrl');
+
+        return { games, total, page, totalPages: Math.ceil(total / limit) };
     },
+
+    findById: (id) => Game.findById(id).populate('player1 player2Id', 'username avatarUrl'),
+    create: (data) => Game.create(data),
+    updateById: (id, data) => Game.findByIdAndUpdate(id, data, { new: true }),
+    findAll: () => Game.find().sort({ startTime: -1 }) .populate('player1 player2Id', 'username'),
 };

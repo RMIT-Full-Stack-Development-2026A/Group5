@@ -33,15 +33,21 @@ function HomePageContent() {
   const [matchId, setMatchId] = useState(null);
   const [gameNumber, setGameNumber] = useState(null);
   const { gameStatus } = useGameStatus();
+  const [roomInfo, setRoomInfo] = useState(null);
+  const [roomLoading, setRoomLoading] = useState(false);
 
-  const [opponentName, setOpponentName] = useState("");
+  const [opponentName, setOpponentName] = useState('');
   useEffect(() => {
     if (selectedMode === 'easy') {
-      setOpponentName("Easy AI");
+      setOpponentName('Jeremy');
     } else if (selectedMode === 'medium') {
-      setOpponentName("Medium AI");
+      setOpponentName('Morgan');
     } else if (selectedMode === 'hard') {
-      setOpponentName("Hard AI");
+      setOpponentName('404 not found');
+    } else if (selectedMode === 'local') {
+      setOpponentName('');
+    } else {
+      setOpponentName('Waiting...');
     }
   }, [selectedMode]);
 

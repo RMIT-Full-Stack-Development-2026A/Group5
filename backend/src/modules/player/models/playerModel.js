@@ -1,10 +1,11 @@
-import mongoose from "mongoose"
-import COUNTRIES from "../../../config/countries.js";
+import mongoose from 'mongoose';
+
 const playerSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
         unique: true,
+        trim: true,
         match: /^[a-zA-Z0-9_-]{3,20}$/,
     },
     email: {
@@ -34,4 +35,4 @@ const playerSchema = new mongoose.Schema({
 
 })
 
-export default mongoose.model('Player', playerSchema)
+export default mongoose.model('Player', playerSchema);
