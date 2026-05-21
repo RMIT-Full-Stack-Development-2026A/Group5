@@ -2,11 +2,19 @@ import { createBrowserRouter, Outlet, RouterProvider, Navigate } from "react-rou
 import Nav from "../../components/Navbar/Navbar";
 import HomePage from '../../pages/HomePage/HomePage';
 import ProfilePage from '../../pages/Profile/Profile';
+import AdminDashboard from '../../pages/AdminDashboard/AdminDashboard.jsx';
 import Login from '../../pages/Login/Login.jsx'
 import { getToken } from "../../services/httpService.js";
+import { useAuth } from '../context/AuthContext.jsx';
 
 const ProtectedRoute = ({ children }) => {
     return getToken() ? children : <Navigate to="/auth" replace />;
+};
+
+const AdminRoute = ({ children }) => {
+    const { user, loading } = useAuth();
+    if (loading) return <div>Loading...</div>;
+    return user?.role === 'admin' ? children : <Navigate to="/" replace />;
 };
 
 const router = createBrowserRouter([
@@ -28,6 +36,14 @@ const router = createBrowserRouter([
             {
                 path: "profile",
                 element: <ProfilePage />
+            },
+            {
+                path: "admin",
+                element: (
+                    <AdminRoute>
+                        <AdminDashboard />
+                    </AdminRoute>
+                )
             }
         ]
     },

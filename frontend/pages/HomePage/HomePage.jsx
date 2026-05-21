@@ -4,32 +4,82 @@ import ModeSelector from '../../components/ModeSelector/ModeSelector';
 import Navbar from '../../components/Navbar/Navbar';
 import GameLobby from '../../components/GameLobby/GameLobby';
 import { GameStatusProvider, useGameStatus } from '../../config/context/GameStatusContext';
-
+import { createGameRoom } from '../../services/gameService.js';
 
 function HomePageContent() {
   const [selectedMode, setSelectedMode] = useState('easy');
   const [boardSize, setBoardSize] = useState(10);
   const [gameId, setGameId] = useState(null);
   const { gameStatus } = useGameStatus();
+  const [roomInfo, setRoomInfo] = useState(null);
+  const [roomLoading, setRoomLoading] = useState(false);
 
-  const [opponentName, setOpponentName] = useState("");
+  const [opponentName, setOpponentName] = useState('');
   useEffect(() => {
     if (selectedMode === 'easy') {
-      setOpponentName("Jeremy");
+      setOpponentName('Jeremy');
     } else if (selectedMode === 'medium') {
-      setOpponentName("Morgan");
+      setOpponentName('Morgan');
     } else if (selectedMode === 'hard') {
-      setOpponentName("404 not found");
+      setOpponentName('404 not found');
+    } else if (selectedMode === 'local') {
+      setOpponentName('');
+    } else {
+      setOpponentName('Waiting...');
     }
   }, [selectedMode]);
+
+  const handleStartGame = async () => {
+    if (selectedMode !== 'online') {
+      return;
+    }
+
+    setRoomLoading(true);
+    try {
+      const roomPayload = {
+        gameType: 'online',
+        boardSize: `${boardSize}x${boardSize}`,
+        boardStyle: 'classic',
+        player1Name: 'You',
+        player2Name: opponentName || 'Waiting Player',
+        player1Marker: 'X',
+        player2Marker: 'O',
+        result: 'pending',
+        startTime: new Date(),
+        endTime: null,
+        isActive: true,
+      };
+
+      const room = await createGameRoom(roomPayload);
+      setRoomInfo(room);
+      setGameStatus('ongoing');
+    } catch (error) {
+      console.error('Unable to create online room', error);
+    } finally {
+      setRoomLoading(false);
+    }
+  };
 
   return (
     <div className="d-flex justify-content-center p-4 row g-4">
       {/* Left — game board */}
       {gameStatus === 'waiting' ? (
-        <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} />
+        <GameLobby
+          selectedMode={selectedMode}
+          opponentName={opponentName}
+          onChangeOpponentName={setOpponentName}
+          onStartGame={handleStartGame}
+          roomInfo={roomInfo}
+          isLoading={roomLoading}
+        />
       ) : (
-        <GameBoard selectedMode={selectedMode} boardStyle="classic" boardSize={boardSize} gameId={gameId} opponentName={opponentName} />
+        <GameBoard
+          selectedMode={selectedMode}
+          boardStyle="classic"
+          boardSize={boardSize}
+          gameId={gameId}
+          opponentName={opponentName}
+        />
       )}
 
       {/* Right — mode selector */}
