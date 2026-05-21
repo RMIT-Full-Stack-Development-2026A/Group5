@@ -1,7 +1,7 @@
 import express from 'express';
 import { getAIMove, createGameSession, getUserSessions, getGameSessionById, createGameRoom, joinGameRoom, listRooms, closeGameRoom } from '../controllers/gameController.js';
-import { authenticate } from '../../middleware/authMiddleware.js';
-import { requireRole } from '../../middleware/roleMiddleware.js';
+import { authenticate } from '../../../middleware/authMiddleware.js';
+import { requireRole } from '../../../middleware/roleMiddleware.js';
 
 const router = express.Router();
 

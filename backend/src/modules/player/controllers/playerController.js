@@ -1,5 +1,5 @@
-import { UserService } from './user.service.js';
-import { processAvatar } from '../../config/avatarUpload.js';
+import { UserService } from '../services/playerService.js';
+import { processAvatar } from '../../../config/avatarUpload.js';
 
 const handle = (fn) => async (req, res) => {
     try {

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import { UserRepository } from './playerRepo.js';
-import { toPublicUserDTO } from './dto/dto.js';
+import { UserRepository } from '../repositories/playerRepo.js';
+import { toPublicUserDTO } from '../dto/dto.js';
 
 export const UserService = {
     async getMe(userId) {

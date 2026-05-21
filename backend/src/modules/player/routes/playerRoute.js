@@ -1,7 +1,7 @@
 import express from 'express';
-import { UserController } from './playerController.js';
-import { authenticate } from '../../middleware/authMiddleware.js';
-import { upload } from '../../config/avatarUpload.js';
+import { UserController } from '../controllers/playerController.js';
+import { authenticate } from '../../../middleware/authMiddleware.js';
+import { upload } from '../../../config/avatarUpload.js';
 
 const router = express.Router();
 
