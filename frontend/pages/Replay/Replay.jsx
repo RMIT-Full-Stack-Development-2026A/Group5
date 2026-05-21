@@ -76,7 +76,17 @@ export default function Replay() {
     const atEnd        = cursor >= session.moves.length;
     const showWinLine  = atEnd && session.status === 'finished';
     const winningLine  = showWinLine ? (session.winLine || []) : [];
-    const winDirection = showWinLine ? 'horizontal' : null;
+
+    const inferWinDirection = (line, boardSize) => {
+        if (!line || line.length < 2) return null;
+        const diff = line[1] - line[0];
+        if (diff === 1)              return 'horizontal';
+        if (diff === boardSize)      return 'vertical';
+        if (diff === boardSize + 1)  return 'diagonal-right';
+        if (diff === boardSize - 1)  return 'diagonal-left';
+        return 'horizontal';
+    };
+    const winDirection = showWinLine ? inferWinDirection(winningLine, size) : null;
 
     const lastMove   = session.moves[cursor - 1] || null;
     const totalMoves = session.moves.length;

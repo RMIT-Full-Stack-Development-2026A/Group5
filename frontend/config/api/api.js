@@ -13,10 +13,10 @@ export const PROFILE_ENDPOINTS = {
 };
 
 export const SESSION_ENDPOINTS = {
-    start:    '/game/session/start',
-    history:  '/game/session/history',
-    byId:     (id) => `/game/session/${id}`,
-    move:     (id) => `/game/session/${id}/move`,
-    finish:   (id) => `/game/session/${id}/finish`,
-    abort:    (id) => `/game/session/${id}/abort`,
+    start:    '/game/start',
+    history:  '/game/history',
+    byId:     (id) => `/game/${id}`,
+    move:     (id) => `/game/${id}/move`,
+    finish:   (id) => `/game/${id}/finish`,
+    abort:    (id) => `/game/${id}/abort`,
 };

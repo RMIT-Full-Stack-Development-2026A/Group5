@@ -1,66 +1,109 @@
 import mongoose from 'mongoose';
 
-const gameSchema = new mongoose.Schema({
-    // "Game ID - 0000001" in UI
-    gameID: {
+
+const moveSchema = new mongoose.Schema({
+    index: {
         type: Number,
         required: true,
+    },
+    playerSlot: {
+        type: String,
+        enum: ['player1', 'player2'],
+        required: true,
+    },
+    position: {
+        type: Number,
+        required: true,
+    },
+    notation: {
+        type: String,
+        required: true,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+}, { _id: false });
+
+
+const gameSchema = new mongoose.Schema({
+    gameNumber: {
+        type: Number,
         unique: true,
+        index: true,
     },
     player1: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Player',
         required: true,
     },
     player2: {
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Player',
+        default: null,
     },
-    result: {
+    player2Name: {
         type: String,
-        enum: ['player1', 'player2', 'draw', 'aborted'],
-        required: true,
+        default: null,
     },
-    moves: [
-        {
-            index: {
-                type: Number,
-                required: true,
-            },
-            player: {
-                type: String,
-                enum: ['player1', 'player2'],
-                required: true,
-            },
-            position: {
-                type: Number,
-                required: true,
-            },
-            timestamp: {
-                type: Date,
-                default: Date.now,
-            },
-        },
-    ],
     gameType: {
         type: String,
         enum: ['local', 'online', 'ai'],
         required: true,
     },
+    aiLevel: {
+        type: String,
+        enum: ['easy', 'medium', 'hard'],
+        default: null,
+    },
     boardSize: {
         type: String,
         enum: ['10x10', '15x15'],
-        required: true
+        required: true,
     },
-
-    })
-
-// Auto-increment gameNumber
-gameSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        const last = await this.constructor.findOne().sort({ gameNumber: -1 });
-        this.gameNumber = last ? last.gameNumber + 1 : 1;
-    }
-    next();
+    boardStyle: {
+        type: String,
+        default: 'classic',
+    },
+    status: {
+        type: String,
+        enum: ['in_progress', 'finished', 'aborted'],
+        default: 'in_progress',
+    },
+    result: {
+        type: String,
+        enum: ['player1', 'player2', 'draw', 'aborted'],
+        default: null,
+    },
+    winLine: {
+        type: [Number],
+        default: [],
+    },
+    moves: {
+        type: [moveSchema],
+        default: [],
+    },
+    startTime: {
+        type: Date,
+        default: Date.now,
+    },
+    endTime: {
+        type: Date,
+        default: null,
+    },
 });
 
-export default mongoose.model('Game', gameSchema);
+
+gameSchema.pre('save', async function () {
+    if (this.isNew && this.gameNumber == null) {
+        const last = await this.constructor
+            .findOne()
+            .sort({ gameNumber: -1 })
+            .select('gameNumber');
+
+        this.gameNumber = last && last.gameNumber ? last.gameNumber + 1 : 1;
+    }
+});
+
+
+export default mongoose.model('Game', gameSchema, 'gamesessions');

@@ -1,47 +1,99 @@
 import Game from '../model/gameModel.js';
 
-export const gameRepository = {
-    // search by gameNumber or opponent name
-    findByPlayer: async (playerId, { search = '', page = 1, limit = 5, sortOrder = 'desc', result = null, gameMode = null, startDate = null, endDate = null }) => {
-        const query = {
-            $or: [{ player1: playerId }, { player2Id: playerId }],
+
+const buildResultClause = (result, playerId) => {
+    if (!result) return null;
+
+    if (result === 'draw')    return { result: 'draw' };
+    if (result === 'aborted') return { status: 'aborted' };
+
+    if (result === 'win') {
+        return {
+            $or: [
+                { player1: playerId, result: 'player1' },
+                { player2: playerId, result: 'player2' },
+            ],
         };
+    }
+    if (result === 'lose') {
+        return {
+            $or: [
+                { player1: playerId, result: 'player2' },
+                { player2: playerId, result: 'player1' },
+            ],
+        };
+    }
+    return null;
+};
 
-        // case-insensitive pattern search on gameNumber or player2Name
-        if (search) {
-            const num = parseInt(search);
-            query.$and = [{
-                $or: [
-                ...(num ? [{ gameNumber: num }] : []),
-                { player2Name: { $regex: search, $options: 'i' } },
-                ],
-            }];
-        }
 
-        // filter by result and gameMode
-        if (result)   query.result   = result;
-        if (gameMode) query.gameMode = gameMode;
+const buildSearchClause = (search) => {
+    if (!search) return null;
 
-        // filter by date range
-        if (startDate || endDate) {
-            query.startTime = {};
-            if (startDate) query.startTime.$gte = new Date(startDate);
-            if (endDate) query.startTime.$lte = new Date(endDate);
-        }
+    const orClauses = [
+        { player2Name: { $regex: search, $options: 'i' } },
+    ];
 
-        const total = await Game.countDocuments(query);
-        const games = await Game.find(query)
-            .sort({ startTime: sortOrder === 'asc' ? 1 : -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .populate('player1', 'username avatarUrl')
-            .populate('player2Id', 'username avatarUrl');
+    const num = parseInt(search, 10);
+    if (!Number.isNaN(num)) {
+        orClauses.push({ gameNumber: num });
+    }
 
-        return { games, total, page, totalPages: Math.ceil(total / limit) };
-    },
+    return { $or: orClauses };
+};
 
-    findById: (id) => Game.findById(id).populate('player1 player2Id', 'username avatarUrl'),
+
+export const gameRepository = {
+
     create: (data) => Game.create(data),
-    updateById: (id, data) => Game.findByIdAndUpdate(id, data, { new: true }),
-    findAll: () => Game.find().sort({ startTime: -1 }) .populate('player1 player2Id', 'username'),
+
+    findById: (id) =>
+        Game.findById(id)
+            .populate('player1', 'username')
+            .populate('player2', 'username'),
+
+    updateById: (id, update) =>
+        Game.findByIdAndUpdate(id, update, { returnDocument: 'after' }),
+
+    pushMove: (id, move) =>
+        Game.findByIdAndUpdate(
+            id,
+            { $push: { moves: move } },
+            { returnDocument: 'after' }
+        ),
+
+    findByPlayer: async (playerId, {
+        search = '',
+        result = null,
+        gameType = null,
+        startDate = null,
+        endDate = null,
+        sortOrder = 'desc',
+    } = {}) => {
+        const andClauses = [
+            { $or: [{ player1: playerId }, { player2: playerId }] },
+        ];
+
+        const searchClause = buildSearchClause(search);
+        if (searchClause) andClauses.push(searchClause);
+
+        const resultClause = buildResultClause(result, playerId);
+        if (resultClause) andClauses.push(resultClause);
+
+        if (gameType) andClauses.push({ gameType });
+
+        if (startDate || endDate) {
+            const dateClause = { startTime: {} };
+            if (startDate) dateClause.startTime.$gte = new Date(startDate);
+            if (endDate)   dateClause.startTime.$lte = new Date(endDate);
+            andClauses.push(dateClause);
+        }
+
+        const query = andClauses.length > 1 ? { $and: andClauses } : andClauses[0];
+
+        return Game.find(query)
+            .sort({ startTime: sortOrder === 'asc' ? 1 : -1 })
+            .populate('player1', 'username')
+            .populate('player2', 'username');
+    },
 };
