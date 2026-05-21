@@ -1,13 +1,13 @@
 import { RouterProvider } from 'react-router-dom';
 import router from './frontend/config/router/RouteConfig'
-import { AuthProvider } from './frontend/config/context/AuthContext.jsx';
 import './frontend/public/main.css';
+import { GameBoardProvider } from './frontend/config/context/GameBoardContext';
 
 function App() {
     return (
-        <AuthProvider>
+        <GameBoardProvider>
             <RouterProvider router={router} />
-        </AuthProvider>
+        </GameBoardProvider>
     );
 }
 

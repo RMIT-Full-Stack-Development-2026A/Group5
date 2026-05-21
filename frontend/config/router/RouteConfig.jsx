@@ -6,15 +6,23 @@ import AdminDashboard from '../../pages/AdminDashboard/AdminDashboard.jsx';
 import Login from '../../pages/Login/Login.jsx'
 import Replay from '../../pages/Replay/Replay.jsx';
 import { getToken } from "../../services/httpService.js";
-import { useAuth } from '../context/AuthContext.jsx';
+
+const AUTH_USER_STORAGE_KEY = 'authUser';
+
+const getStoredAuthUser = () => {
+    try {
+        return JSON.parse(localStorage.getItem(AUTH_USER_STORAGE_KEY));
+    } catch {
+        return null;
+    }
+};
 
 const ProtectedRoute = ({ children }) => {
     return getToken() ? children : <Navigate to="/auth" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-    const { user, loading } = useAuth();
-    if (loading) return <div>Loading...</div>;
+    const user = getStoredAuthUser();
     return user?.role === 'admin' ? children : <Navigate to="/" replace />;
 };
 

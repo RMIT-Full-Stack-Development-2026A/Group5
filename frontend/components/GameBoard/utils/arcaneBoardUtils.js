@@ -114,18 +114,18 @@ function drawArcaneBackground(canvas) {
    ---------------------------------------------------------- */
 function arcaneSeal(sz) {
   return `<svg width="${sz}" height="${sz}" viewBox="0 0 54 54" fill="none">
-  <circle class="sglf" cx="27" cy="27" r="22"  stroke="#4c1d95" stroke-width="0.7" stroke-dasharray="2,3" ${_d(0)}/>
-  <circle class="sgl"  cx="27" cy="27" r="17"  stroke="#8b5cf6" stroke-width="1.1" ${_d(0.06)}/>
-  <polygon class="sgl" points="27,10 41.7,35.5 12.3,35.5" stroke="#8b5cf6" stroke-width="1"  fill="rgba(139,92,246,0.07)" ${_d(0.14)}/>
-  <polygon class="sgl" points="27,44 41.7,18.5 12.3,18.5" stroke="#6d28d9" stroke-width="1"  fill="rgba(109,40,217,0.07)" ${_d(0.23)}/>
-  <circle class="sgl"  cx="27" cy="27" r="4.5" stroke="#a78bfa" stroke-width="0.9" fill="rgba(139,92,246,0.18)" ${_d(0.32)}/>
-  <circle class="sgd"  cx="27"   cy="27"   r="1.8" fill="#c4b5fd" ${_d(0.40)}/>
-  <circle class="sgd"  cx="27"   cy="10"   r="1.6" fill="#a78bfa" ${_d(0.46)}/>
-  <circle class="sgd"  cx="41.7" cy="35.5" r="1.6" fill="#a78bfa" ${_d(0.46)}/>
-  <circle class="sgd"  cx="12.3" cy="35.5" r="1.6" fill="#a78bfa" ${_d(0.46)}/>
-  <circle class="sgd"  cx="27"   cy="44"   r="1.6" fill="#7c3aed" ${_d(0.50)}/>
-  <circle class="sgd"  cx="41.7" cy="18.5" r="1.6" fill="#7c3aed" ${_d(0.50)}/>
-  <circle class="sgd"  cx="12.3" cy="18.5" r="1.6" fill="#7c3aed" ${_d(0.50)}/>
+  <circle class="sglf" cx="27" cy="27" r="22"  stroke="#5a28a8" stroke-width="0.9" stroke-dasharray="2,3" ${_d(0)}/>
+  <circle class="sgl"  cx="27" cy="27" r="17"  stroke="#9b6ffb" stroke-width="1.2" ${_d(0.06)}/>
+  <polygon class="sgl" points="27,10 41.7,35.5 12.3,35.5" stroke="#9b6ffb" stroke-width="1"  fill="rgba(139,92,246,0.12)" ${_d(0.14)}/>
+  <polygon class="sgl" points="27,44 41.7,18.5 12.3,18.5" stroke="#7a3be6" stroke-width="1"  fill="rgba(109,40,217,0.12)" ${_d(0.23)}/>
+  <circle class="sgl"  cx="27" cy="27" r="4.5" stroke="#d7ccff" stroke-width="1" fill="rgba(139,92,246,0.30)" ${_d(0.32)}/>
+  <circle class="sgd"  cx="27"   cy="27"   r="1.8" fill="#efe6ff" ${_d(0.40)}/>
+  <circle class="sgd"  cx="27"   cy="10"   r="1.6" fill="#d7ccff" ${_d(0.46)}/>
+  <circle class="sgd"  cx="41.7" cy="35.5" r="1.6" fill="#d7ccff" ${_d(0.46)}/>
+  <circle class="sgd"  cx="12.3" cy="35.5" r="1.6" fill="#d7ccff" ${_d(0.46)}/>
+  <circle class="sgd"  cx="27"   cy="44"   r="1.6" fill="#c99bff" ${_d(0.50)}/>
+  <circle class="sgd"  cx="41.7" cy="18.5" r="1.6" fill="#c99bff" ${_d(0.50)}/>
+  <circle class="sgd"  cx="12.3" cy="18.5" r="1.6" fill="#c99bff" ${_d(0.50)}/>
 </svg>`;
 }
 

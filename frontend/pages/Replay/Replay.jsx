@@ -2,17 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { gameSessionService } from '../../services/gameSessionService';
 import { ClassicGameBoard } from '../../components/GameBoard/boards/ClassicGameBoard';
-import '../../components/GameBoard/gameBoard.css';
-
 
 const boardSizeToInt = (s) => parseInt(String(s).split('x')[0], 10);
 
 const renderMarker = (slot) => slot === 'player1' ? 'X' : 'O';
 
 const aiDisplayName = (level) => {
-    if (level === 'easy')   return 'Easy AI';
-    if (level === 'medium') return 'Medium AI';
-    if (level === 'hard')   return 'Hard AI';
+    if (level === 'easy')   return 'Jeremy';
+    if (level === 'medium') return 'Morgan';
+    if (level === 'hard')   return '404 Not Found';
     return 'AI';
 };
 

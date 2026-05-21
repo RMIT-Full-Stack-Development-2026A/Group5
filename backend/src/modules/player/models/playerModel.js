@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import COUNTRIES  from '../../../config/countries.js';
 const playerSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -32,7 +32,10 @@ const playerSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-
+    isActive: {
+        type: Boolean,
+        default: true,
+    }
 })
 
 export default mongoose.model('Player', playerSchema);

@@ -29,9 +29,9 @@ const formatResult = (s, viewerId) => {
 
 
 const aiDisplayName = (level) => {
-    if (level === 'easy')   return 'Easy AI';
-    if (level === 'medium') return 'Medium AI';
-    if (level === 'hard')   return 'Hard AI';
+    if (level === 'easy')   return 'Jeremy';
+    if (level === 'medium') return 'Morgan';
+    if (level === 'hard')   return '404 Not Found';
     return 'AI';
 };
 

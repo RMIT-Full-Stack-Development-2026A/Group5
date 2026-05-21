@@ -1,14 +1,5 @@
 import mongoose from 'mongoose';
 
-const moveSchema = new mongoose.Schema({
-    moveNumber: { type: Number, required: true },
-    player: { type: String, required: true },
-    marker: { type: String, required: true },
-    index: { type: Number, required: true },
-    position: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-});
-
 
 const moveSchema = new mongoose.Schema({
     index: {
@@ -68,18 +59,51 @@ const gameSchema = new mongoose.Schema({
     boardSize: {
         type: String,
         enum: ['10x10', '15x15'],
-        required: true
+        required: true,
     },
+    boardStyle: {
+        type: String,
+        default: 'classic',
+    },
+    status: {
+        type: String,
+        enum: ['in_progress', 'finished', 'aborted'],
+        default: 'in_progress',
+    },
+    result: {
+        type: String,
+        enum: ['player1', 'player2', 'draw', 'aborted'],
+        default: null,
+    },
+    winLine: {
+        type: [Number],
+        default: [],
+    },
+    moves: {
+        type: [moveSchema],
+        default: [],
+    },
+    startTime: {
+        type: Date,
+        default: Date.now,
+    },
+    endTime: {
+        type: Date,
+        default: null,
+    },
+});
 
-    })
 
-// Auto-increment gameNumber
-gameSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        const last = await this.constructor.findOne().sort({ gameNumber: -1 });
-        this.gameNumber = last ? last.gameNumber + 1 : 1;
+gameSchema.pre('save', async function () {
+    if (this.isNew && this.gameNumber == null) {
+        const last = await this.constructor
+            .findOne()
+            .sort({ gameNumber: -1 })
+            .select('gameNumber');
+
+        this.gameNumber = last && last.gameNumber ? last.gameNumber + 1 : 1;
     }
 });
 
 
-export default mongoose.model('Game', gameSchema);
+export default mongoose.model('Game', gameSchema, 'gamesessions');

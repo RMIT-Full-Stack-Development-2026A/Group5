@@ -4,6 +4,7 @@ import ModeSelector from '../../components/ModeSelector/ModeSelector';
 import Navbar from '../../components/Navbar/Navbar';
 import GameLobby from '../../components/GameLobby/GameLobby';
 import { GameStatusProvider, useGameStatus } from '../../config/context/GameStatusContext';
+import { useGameBoard } from '../../config/context/GameBoardContext';
 import { gameSessionService } from '../../services/gameSessionService';
 
 
@@ -37,6 +38,7 @@ function HomePageContent() {
   const [roomLoading, setRoomLoading] = useState(false);
 
   const [opponentName, setOpponentName] = useState('');
+  const { gameBoard } = useGameBoard();
   useEffect(() => {
     if (selectedMode === 'easy') {
       setOpponentName('Jeremy');
@@ -76,7 +78,7 @@ function HomePageContent() {
       {gameStatus === 'waiting' ? (
         <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} onStart={handleStart} />
       ) : (
-        <GameBoard selectedMode={selectedMode} boardStyle="celestial" boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
+        <GameBoard selectedMode={selectedMode} boardStyle={gameBoard} boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
       )}
 
       {/* Right — mode selector */}

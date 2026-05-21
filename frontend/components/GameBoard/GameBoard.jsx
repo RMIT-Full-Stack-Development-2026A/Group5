@@ -71,50 +71,6 @@ const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameI
     const isFinished = gameStatus === 'finished';
     const isOver = isFinished || isAborted;
 
-    useEffect(() => {
-        if (gameStatus === 'waiting') {
-            setSessionSaved(false);
-            setSaveError('');
-        }
-    }, [gameStatus]);
-
-    useEffect(() => {
-        const shouldSave = (isFinished || isAborted) && !sessionSaved && moves.length > 0;
-        if (!shouldSave) return;
-
-        const saveSession = async () => {
-            try {
-                const gameType = selectedMode === 'local' ? 'local' : selectedMode === 'online' ? 'online' : 'ai';
-                const payload = {
-                    gameType,
-                    boardSize: `${boardSize}x${boardSize}`,
-                    boardStyle,
-                    player1Name: 'You',
-                    player2Name: selectedMode === 'local'
-                        ? opponentName || 'Player 2'
-                        : selectedMode === 'online'
-                            ? opponentName || 'Opponent'
-                            : 'AI',
-                    player1Marker: 'X',
-                    player2Marker: 'O',
-                    result: mapResultToBackend(result),
-                    startTime,
-                    endTime,
-                    moves,
-                };
-
-                await saveGameSession(payload);
-                setSessionSaved(true);
-            } catch (error) {
-                setSaveError(error.message || 'Unable to save game history.');
-            }
-        };
-
-        saveSession();
-    }, [isFinished, isAborted, sessionSaved, moves, selectedMode, opponentName, boardSize, boardStyle, result, startTime, endTime]);
-
-    const LOBBY_ID = '1234567';
-
     const statusText = isAborted
         ? 'Game aborted — no winner'
         : winner
@@ -191,11 +147,6 @@ const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameI
 
             </div>
 
-            {saveError && (
-                <div className="alert alert-warning w-75 mt-3" role="alert">
-                    {saveError}
-                </div>
-            )}
             {/* Board */}
             {boardContent}
 

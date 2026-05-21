@@ -1,12 +1,24 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../config/context/AuthContext.jsx';
+import { useState } from 'react';
+import { removeToken } from '../../services/httpService.js';
+
+const AUTH_USER_STORAGE_KEY = 'authUser';
+
+const getStoredAuthUser = () => {
+    try {
+        return JSON.parse(localStorage.getItem(AUTH_USER_STORAGE_KEY));
+    } catch {
+        return null;
+    }
+};
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const { user, signOut } = useAuth();
+    const [user] = useState(getStoredAuthUser());
 
     const handleLogout = () => {
-        signOut();
+        removeToken();
+        localStorage.removeItem(AUTH_USER_STORAGE_KEY);
         navigate('/auth');
     };
 

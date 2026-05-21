@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchAdminUsers, setUserActiveStatus, listActiveRooms, closeAdminRoom } from '../../services/gameService.js';
+import { http } from '../../services/httpService.js';
+
+const fetchAdminUsers = () => http.get('/admin/users');
+const setUserActiveStatus = (userId, isActive) => http.patch(`/admin/users/${userId}/status`, { isActive });
+const listActiveRooms = () => http.get('/game/rooms');
+const closeAdminRoom = (roomId) => http.patch(`/admin/rooms/${roomId}/close`, {});
 
 export default function AdminDashboard() {
     const [users, setUsers] = useState([]);
