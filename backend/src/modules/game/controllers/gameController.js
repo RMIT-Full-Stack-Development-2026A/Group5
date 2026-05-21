@@ -30,7 +30,7 @@ export const getMove = (req, res) => {
 };
 
 
-// Session lifecycle 
+// Game session management (start / move / finish / abort / history)
 
 export const startGame = async (req, res) => {
     try {

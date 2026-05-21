@@ -15,7 +15,7 @@ const router = express.Router();
 // AI move computation
 router.post('/ai/move',          getMove);
 
-// Session lifecycle  all auth-protected
+// Game session management (start / move / finish / abort / history)
 router.post('/start',            verifyToken, startGame);
 router.get('/history',           verifyToken, getHistory);
 router.get('/:id',               verifyToken, getMatchById);

@@ -70,7 +70,7 @@ function HomePageContent() {
       {gameStatus === 'waiting' ? (
         <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} onStart={handleStart} />
       ) : (
-        <GameBoard selectedMode={selectedMode} boardStyle="classic" boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
+        <GameBoard selectedMode={selectedMode} boardStyle="celestial" boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
       )}
 
       {/* Right — mode selector */}

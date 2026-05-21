@@ -153,16 +153,16 @@ export { easyAI, mediumAI, hardAI };
 
 
 // ─────────────────────────────────────────────────────────────
-//  Session lifecycle (start / move / finish / abort / history)
+//  Game session management (start / move / finish / abort / history)
 // ─────────────────────────────────────────────────────────────
 
 import { gameRepository } from '../repositories/gameRepo.js';
 
 
 const AI_NAMES = {
-    easy:   'Easy AI',
-    medium: 'Medium AI',
-    hard:   'Hard AI',
+    easy:   'Jeremy',
+    medium: 'Casey',
+    hard:   '404 Not Found',
 };
 
 
