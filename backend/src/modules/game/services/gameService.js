@@ -83,7 +83,6 @@ const mediumAI = (board, lastMove, boardSize) => {
 
     // Check if opponent has a winning move and block it
     for (let i = 0; i < board.length; i++) {
-        let priority = 0;
         let open3 = 0;
         if (board[i] === null) {
             for (const { dr, dc } of directions) {
@@ -118,6 +117,7 @@ const findWinningMove = (board, boardSize, player) => {
     ];
 
     for (let i = 0; i < board.length; ++i) {
+        let open3 = 0;
         if (board[i] === null) {
 
             for (const { dr, dc } of directions) {
@@ -125,9 +125,15 @@ const findWinningMove = (board, boardSize, player) => {
                 if (count >= 5) {
                     return i;
                 }
-                if (count >= 4 && openEnds >= 2) {
+                if (count === 4 && openEnds === 2) {
                     return i;
                 }
+                if (count === 3 && openEnds === 2) {
+                    open3++
+                }
+            }
+            if (open3 >= 2) {
+                return i;
             }
         }
     }

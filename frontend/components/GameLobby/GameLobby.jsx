@@ -1,15 +1,17 @@
-import { useGameStatus } from '../../config/context/GameStatusContext';
 import './GameLobby.css';
+import { useGameLobby } from './useGameLobby';
 
 export default function GameLobby({selectedMode = 'local', opponentName = 'AI', onChangeOpponentName, onStart}) {
-    const { setGameStatus } = useGameStatus();
-
-    const handleStart = async () => {
-        if (onStart) {
-            await onStart();
-        }
-        setGameStatus('ongoing');
-    };
+    const {
+        handleStart,
+        roomCodeInput,
+        setRoomCodeInput,
+        activeRoomCode,
+        onlineError,
+        canStartOnline,
+        createRoom,
+        joinRoom,
+    } = useGameLobby({ selectedMode, onStart });
 
     if (selectedMode === 'local' || selectedMode === 'easy' || selectedMode === 'medium' || selectedMode === 'hard') {
         return (
@@ -36,7 +38,25 @@ export default function GameLobby({selectedMode = 'local', opponentName = 'AI', 
                     <p>P1: You</p>
                     <p>P2: {opponentName || 'Waiting for opponent...'}</p>
                 </div>
-                <button className="start-game-btn" onClick={handleStart}>Start Game</button>
+
+                <div className="d-flex gap-2 mb-3">
+                    <button className="start-game-btn" type="button" onClick={createRoom}>Create Room</button>
+                    <button className="start-game-btn" type="button" onClick={joinRoom}>Join Room</button>
+                </div>
+
+                <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Enter room code"
+                    value={roomCodeInput}
+                    onChange={(e) => setRoomCodeInput(e.target.value.toUpperCase())}
+                    style={{ maxWidth: '260px' }}
+                />
+
+                {activeRoomCode ? <p className="mb-2">Room: {activeRoomCode}</p> : null}
+                {onlineError ? <p className="text-danger mb-3">{onlineError}</p> : null}
+
+                <button className="start-game-btn" onClick={handleStart} disabled={!canStartOnline}>Start Game</button>
             </div>
         )
     }
