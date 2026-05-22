@@ -21,6 +21,16 @@ export const updateProfile = async (req, res) => {
 };
 
 
+export const uploadAvatar = async (req, res) => {
+    try {
+        const profile = await playerService.uploadAvatar(req.user.id, req.file);
+        return res.status(200).json({ profile });
+    } catch (err) {
+        return res.status(err.statusCode || 500).json({ message: err.message || 'Failed to upload avatar' });
+    }
+};
+
+
 export const changePassword = async (req, res) => {
     try {
         const result = await playerService.changePassword(req.user.id, req.body);

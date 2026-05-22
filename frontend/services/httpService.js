@@ -51,5 +51,17 @@ export const http = {
             body: JSON.stringify(body)
         });
         return await http._handleResponse(res);
+    },
+
+    // Upload a file via multipart/form-data.
+    // Do NOT set Content-Type — fetch needs to add the multipart boundary itself.
+    upload: async (url, formData) => {
+        const token = getToken();
+        const res = await fetch(`${API_BASE}${url}`, {
+            method: 'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: formData,
+        });
+        return await http._handleResponse(res);
     }
 };

@@ -12,4 +12,10 @@ export const profileService = {
 
     changePassword: (payload) =>
         http.patch(PROFILE_ENDPOINTS.password, payload),
+
+    uploadAvatar: (file) => {
+        const fd = new FormData();
+        fd.append('avatar', file);
+        return http.upload(PROFILE_ENDPOINTS.avatar, fd);
+    },
 };

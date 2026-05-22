@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { playerRepository } from '../repositories/playerRepo.js';
 import COUNTRIES from '../../../config/countries.js';
+import { processAvatar } from '../../../config/avatarUpload.js';
 
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,20}$/;
@@ -70,6 +71,17 @@ export const playerService = {
         }
 
         const player = await playerRepository.updateById(userId, update);
+        return toPublic(player);
+    },
+
+    uploadAvatar: async (userId, file) => {
+        if (!file) throw createError('No file uploaded', 400);
+        if (!file.mimetype?.startsWith('image/')) {
+            throw createError('Only image files are allowed', 400);
+        }
+
+        const avatarUrl = await processAvatar(file.buffer, userId);
+        const player = await playerRepository.updateById(userId, { avatarUrl });
         return toPublic(player);
     },
 

@@ -9,6 +9,7 @@ export const AUTH_ENDPOINTS = {
 export const PROFILE_ENDPOINTS = {
     me:        '/profile/me',
     password:  '/profile/me/password',
+    avatar:    '/profile/me/avatar',
 };
 
 export const GAME_ENDPOINTS = {
