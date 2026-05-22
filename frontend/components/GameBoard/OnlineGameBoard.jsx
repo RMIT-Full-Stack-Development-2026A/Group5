@@ -39,7 +39,7 @@ const OnlineGameBoard = ({ roomInfo }) => {
     const youName        = roomInfo?.you === 'player1' ? roomInfo?.player1?.username : roomInfo?.player2?.username;
     const opponentName   = roomInfo?.you === 'player1' ? roomInfo?.player2?.username : roomInfo?.player1?.username;
 
-    // ── Chat ──────────────────────────────────────────────
+    //  Chat 
     const [messages, setMessages]   = useState([]);
     const [draft, setDraft]         = useState('');
     const scrollerRef               = useRef(null);
@@ -94,17 +94,20 @@ const OnlineGameBoard = ({ roomInfo }) => {
                 </div>
             </div>
 
-            <div className="d-flex gap-3 w-100 justify-content-center">
+            <div className="d-flex flex-wrap gap-3 w-100 justify-content-center align-items-start">
                 <ClassicGameBoard
                     board={board}
                     winningLine={winningLine}
                     winDirection={winDirection}
                     handleCellClick={handleCellClick}
                     boardSize={boardSize}
+                    style={{
+                        '--cell-size': `clamp(20px, calc((100vw - 360px) / ${boardSize} - 4px), ${boardSize >= 15 ? 36 : 50}px)`,
+                    }}
                 />
 
                 {/* Chat panel */}
-                <div className="card d-flex flex-column" style={{ width: 280, maxHeight: 480 }}>
+                <div className="card d-flex flex-column" style={{ width: 280, maxHeight: 480, flexShrink: 0 }}>
                     <div className="card-header py-2 fw-bold">Chat</div>
                     <div
                         ref={scrollerRef}

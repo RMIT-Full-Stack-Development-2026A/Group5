@@ -3,8 +3,8 @@ import { sessionService } from '../modules/game/services/gameService.js';
 
 
 // In-memory state — rooms exist only while a match is live.
-// Match persistence (moves, results) goes through sessionService → MongoDB.
-const rooms = new Map();   // code -> { matchId, boardSize, players: {player1, player2}, currentTurn, finished }
+
+const rooms = new Map();   // code -> 
 
 
 const generateCode = () => {

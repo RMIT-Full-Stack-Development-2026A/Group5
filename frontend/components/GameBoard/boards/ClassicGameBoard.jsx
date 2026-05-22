@@ -6,9 +6,10 @@ export const ClassicGameBoard = ({
     winDirection,
     handleCellClick,
     boardSize,
+    style,
 }) => {
     return (
-        <div className="board board-classic" style={{ '--board-size': boardSize }}>
+        <div className="board board-classic" style={{ '--board-size': boardSize, ...style }}>
             <div className="board-grid">
                 {board.map((cell, index) => {
                     const row = Math.floor(index / boardSize);
