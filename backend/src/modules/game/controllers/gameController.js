@@ -92,7 +92,8 @@ export const getHistory = async (req, res) => {
 
 export const getMatchById = async (req, res) => {
     try {
-        const session = await sessionService.getById(req.params.id, req.user.id);
+        const isAdmin = req.user && req.user.role === 'admin';
+        const session = await sessionService.getById(req.params.id, req.user.id, isAdmin);
         return res.status(200).json({ session });
     } catch (err) {
         return res.status(err.statusCode || 500).json({ message: err.message || 'Failed to fetch match.' });

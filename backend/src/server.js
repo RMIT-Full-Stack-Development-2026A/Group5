@@ -9,7 +9,7 @@ import { registerSocketHandlers } from './config/socketHandlers.js';
 import http from 'http';
 import { Server } from 'socket.io';
 
-// import adminRouter from './modules/admin/routes/adminRoute.js';
+ import adminRouter from './modules/admin/routes/adminRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,7 +21,7 @@ app.use(express.json());
 app.use('/api/game', gameRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/profile', playerRouter);
-// app.use('/api/admin', adminRouter);
+app.use('/api/admin', adminRouter);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {

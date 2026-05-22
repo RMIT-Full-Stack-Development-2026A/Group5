@@ -18,8 +18,11 @@ export const http = {
         // If unauthorized, clear token and redirect to login
         if (res.status === 401) {
             removeToken();
-            // hard redirect to auth route so React state resets
-            window.location.href = '/auth';
+            // Only redirect to auth if we're not already on the auth page
+            if (typeof window !== 'undefined' && window.location && !window.location.pathname.startsWith('/auth')) {
+                // hard redirect to auth route so React state resets
+                window.location.href = '/auth';
+            }
             throw { message: (data && data.message) || 'Unauthorized', status: 401 };
         }
 

@@ -276,10 +276,12 @@ export const sessionService = {
         });
     },
 
-    getById: async (matchId, playerId) => {
+    getById: async (matchId, playerId, isAdmin = false) => {
         const session = await gameRepository.findById(matchId);
         if (!session) throw { statusCode: 404, message: 'Match not found.' };
-        assertOwnership(session, playerId);
+        if (!isAdmin) {
+            assertOwnership(session, playerId);
+        }
         return session;
     },
 };
