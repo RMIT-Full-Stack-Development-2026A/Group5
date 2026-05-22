@@ -5,9 +5,15 @@ import { ClassicGameBoard } from './boards/ClassicGameBoard';
 import { CelestialGameBoard } from './boards/CelestialGameBoard';
 import { ArcaneGameBoard } from './boards/ArcaneGame';
 import { gameSessionService } from '../../services/gameSessionService';
+import OnlineGameBoard from './OnlineGameBoard';
 
 
-const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameId, gameNumber, opponentName }) => {
+const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameId, gameNumber, opponentName, roomInfo }) => {
+    // Online mode is fully delegated — uses sockets, not REST persistence.
+    if (selectedMode === 'online') {
+        return <OnlineGameBoard roomInfo={roomInfo} />;
+    }
+
     const {
         board, xIsNext, winner, winningLine, winDirection,
         gameStatus, moves,

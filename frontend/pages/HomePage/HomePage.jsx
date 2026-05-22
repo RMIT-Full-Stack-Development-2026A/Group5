@@ -58,10 +58,14 @@ function HomePageContent() {
     if (gameStatus === 'waiting') {
       setMatchId(null);
       setGameNumber(null);
+      setRoomInfo(null);
     }
   }, [gameStatus]);
 
   const handleStart = async () => {
+    // Online mode is socket-driven; session is created on the server when both players join.
+    if (selectedMode === 'online') return;
+
     try {
       const payload = toSessionPayload(selectedMode, boardSize, opponentName);
       const { matchId: id, gameNumber: num } = await gameSessionService.start(payload);
@@ -76,9 +80,9 @@ function HomePageContent() {
     <div className="d-flex justify-content-center p-4 row g-4">
       {/* Left — game board */}
       {gameStatus === 'waiting' ? (
-        <GameLobby selectedMode={selectedMode} opponentName={opponentName} onChangeOpponentName={setOpponentName} onStart={handleStart} />
+        <GameLobby selectedMode={selectedMode} boardSize={boardSize} opponentName={opponentName} onChangeOpponentName={setOpponentName} onStart={handleStart} onOnlineReady={setRoomInfo} />
       ) : (
-        <GameBoard selectedMode={selectedMode} boardStyle={gameBoard} boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} />
+        <GameBoard selectedMode={selectedMode} boardStyle={gameBoard} boardSize={boardSize} gameId={matchId} gameNumber={gameNumber} opponentName={opponentName} roomInfo={roomInfo} />
       )}
 
       {/* Right — mode selector */}
