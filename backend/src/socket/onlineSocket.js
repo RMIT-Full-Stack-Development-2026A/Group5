@@ -160,6 +160,22 @@ export const setupOnlineSocket = (io) => {
             }
         });
 
+        // Real-time chat between the two players (SRS 4.3.2)
+        socket.on('chat', ({ message } = {}, ack) => {
+            const code = socket.data.roomCode;
+            const room = rooms.get(code);
+            if (!room || !room.matchId) return ack?.({ ok: false, error: 'No active match' });
+            if (typeof message !== 'string' || !message.trim()) return ack?.({ ok: false });
+
+            io.to(code).emit('chatMessage', {
+                from:      socket.data.username,
+                userId:    socket.data.userId,
+                message:   message.trim().slice(0, 500),
+                timestamp: Date.now(),
+            });
+            ack?.({ ok: true });
+        });
+
         socket.on('disconnect', () => {
             const code = socket.data.roomCode;
             if (!code) return;

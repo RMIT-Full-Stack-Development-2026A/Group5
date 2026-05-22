@@ -132,8 +132,8 @@ const GameBoard = ({ selectedMode, boardStyle = 'classic', boardSize = 10, gameI
                 onClick={abortGame}
                 disabled={isOver}
             >Abort</button>
-            <button className="btn btn-dark btn-sm px-3" onClick={resetGame}>
-                Reset
+            <button className="btn btn-dark btn-sm px-3" onClick={resetGame} disabled={!isOver}>
+                New Game
             </button>
             </div>
 

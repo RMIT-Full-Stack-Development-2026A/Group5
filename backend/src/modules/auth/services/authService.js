@@ -43,6 +43,10 @@ export const login = async ({identifier, password})  => {
         throw createError('Invalid Username/Email or password', 401);
     }
 
+    if (user.isActive === false) {
+        throw createError('Account is disabled. Contact an administrator.', 403);
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
 
     if (!isMatch) {

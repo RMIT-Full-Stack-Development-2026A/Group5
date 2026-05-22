@@ -1,30 +1,44 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { http } from '../../services/httpService.js';
 
 const fetchAdminUsers = () => http.get('/admin/users');
 const setUserActiveStatus = (userId, isActive) => http.patch(`/admin/users/${userId}/status`, { isActive });
-const listActiveRooms = () => http.get('/game/rooms');
-const closeAdminRoom = (roomId) => http.patch(`/admin/rooms/${roomId}/close`, {});
+const fetchAdminGames = (filters = {}) => {
+    const qs = new URLSearchParams(Object.entries(filters).filter(([, v]) => v != null && v !== '')).toString();
+    const url = qs ? `/admin/games?${qs}` : '/admin/games';
+    return http.get(url);
+};
 
 export default function AdminDashboard() {
     const [users, setUsers] = useState([]);
-    const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [loadingRooms, setLoadingRooms] = useState(true);
+    const [games, setGames] = useState([]);
+    const [loadingGames, setLoadingGames] = useState(true);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalGames, setTotalGames] = useState(0);
     const [error, setError] = useState('');
 
     const loadAdminData = async () => {
         setLoading(true);
+        setLoadingGames(true);
         setError('');
         try {
-            const [userData, roomData] = await Promise.all([fetchAdminUsers(), listActiveRooms()]);
-            setUsers(userData);
-            setRooms(roomData.rooms ?? roomData);
+            const [userData, gamesData] = await Promise.all([fetchAdminUsers(), fetchAdminGames({ page, limit })]);
+            setUsers(userData || []);
+            setGames((gamesData && gamesData.sessions) || []);
+            setTotalGames(gamesData?.total || 0);
+            setTotalPages(gamesData?.totalPages || 1);
         } catch (err) {
-            setError(err.message || 'Unable to load admin data.');
+            console.error('Admin load error:', err);
+            const message = err && (err.message || JSON.stringify(err)) || 'Unable to load admin data.';
+            const status = err && err.status ? ` (status ${err.status})` : '';
+            setError(`${message}${status}`);
         } finally {
             setLoading(false);
-            setLoadingRooms(false);
+            setLoadingGames(false);
         }
     };
 
@@ -32,21 +46,43 @@ export default function AdminDashboard() {
         loadAdminData();
     }, []);
 
+    useEffect(() => {
+        // reload games when page or limit changes
+        const loadGamesOnly = async () => {
+            setLoadingGames(true);
+            setError('');
+            try {
+                const gamesData = await fetchAdminGames({ page, limit });
+                setGames((gamesData && gamesData.sessions) || []);
+                setTotalGames(gamesData?.total || 0);
+                setTotalPages(gamesData?.totalPages || 1);
+            } catch (err) {
+                console.error('Failed loading games:', err);
+                setError(err.message || 'Failed loading games');
+            } finally {
+                setLoadingGames(false);
+            }
+        };
+        loadGamesOnly();
+    }, [page, limit]);
+
+    const changePage = (p) => {
+        if (p < 1) p = 1;
+        if (p > totalPages) p = totalPages;
+        setPage(p);
+    };
+
+    const changeLimit = (l) => {
+        setLimit(l);
+        setPage(1);
+    };
+
     const handleToggleStatus = async (userId, isActive) => {
         try {
             const updated = await setUserActiveStatus(userId, !isActive);
             setUsers((current) => current.map((user) => (user._id === userId ? updated : user)));
         } catch (err) {
             setError(err.message || 'Unable to update user status.');
-        }
-    };
-
-    const handleCloseRoom = async (roomId) => {
-        try {
-            const closed = await closeAdminRoom(roomId);
-            setRooms((current) => current.filter((room) => room._id !== closed._id));
-        } catch (err) {
-            setError(err.message || 'Unable to close room.');
         }
     };
 
@@ -99,40 +135,35 @@ export default function AdminDashboard() {
                 <div className="col-12">
                     <div className="card p-4">
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h2 className="h4">Active Game Rooms</h2>
+                            <h2 className="h4">All Games</h2>
                         </div>
-                        {loadingRooms ? (
-                            <p>Loading rooms...</p>
-                        ) : rooms.length === 0 ? (
-                            <div className="alert alert-secondary">No active rooms found.</div>
+                        {loadingGames ? (
+                            <p>Loading games...</p>
+                        ) : games.length === 0 ? (
+                            <div className="alert alert-secondary">No games found.</div>
                         ) : (
                             <div className="table-responsive">
                                 <table className="table table-bordered table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Room</th>
+                                            <th>Match #</th>
                                             <th>Host</th>
                                             <th>Opponent</th>
                                             <th>Game Type</th>
-                                            <th>Status</th>
+                                            <th>Winner</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {rooms.map((room) => (
-                                            <tr key={room._id}>
-                                                <td>{room.roomNumber}</td>
-                                                <td>{room.player1Name}</td>
-                                                <td>{room.player2Name || 'Waiting'}</td>
-                                                <td>{room.gameType}</td>
-                                                <td>{room.isActive ? 'Open' : 'Closed'}</td>
+                                        {games.map((g) => (
+                                            <tr key={g._id}>
+                                                <td>{g.gameNumber}</td>
+                                                <td>{g.player1.username}</td>
+                                                <td>{g.player2Name}</td>
+                                                <td>{g.gameType}</td>
+                                                <td>{g.winner}</td>
                                                 <td>
-                                                    <button
-                                                        className="btn btn-sm btn-outline-danger"
-                                                        onClick={() => handleCloseRoom(room._id)}
-                                                    >
-                                                        Close Room
-                                                    </button>
+                                                    <Link to={`/replay/${g._id}`} className="btn btn-sm btn-outline-primary">Replay</Link>
                                                 </td>
                                             </tr>
                                         ))}
@@ -140,9 +171,25 @@ export default function AdminDashboard() {
                                 </table>
                             </div>
                         )}
+
+                        {/* Pagination controls */}
+                        <div className="d-flex justify-content-between align-items-center mt-3">
+                            <div className="small text-muted">Showing {Math.min((page - 1) * limit + 1, totalGames)} - {Math.min(page * limit, totalGames)} of {totalGames}</div>
+                            <div>
+                                <button className="btn btn-sm btn-outline-secondary me-2" disabled={page <= 1} onClick={() => changePage(page - 1)}>Prev</button>
+                                <button className="btn btn-sm btn-outline-secondary me-2" disabled={page >= totalPages} onClick={() => changePage(page + 1)}>Next</button>
+                                <select className="form-select form-select-sm d-inline-block" style={{ width: 100 }} value={limit} onChange={(e) => changeLimit(Number(e.target.value))}>
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={25}>25</option>
+                                    <option value={50}>50</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+

@@ -30,6 +30,22 @@ export const AdminController = {
         res.json(await AdminService.listRooms(filters));
     }),
 
+    listGames: handle(async (req, res) => {
+        const filters = {
+            search: req.query.search || '',
+            page: Number(req.query.page) || 1,
+            limit: Number(req.query.limit) || 10,
+            sortOrder: req.query.sortOrder || 'desc',
+            result: req.query.result || '',
+            gameType: req.query.gameType || null,
+            startDate: req.query.startDate || null,
+            endDate: req.query.endDate || null,
+        };
+        const data = await AdminService.listGames(filters);
+        // return in the same shape as game history: { sessions }
+        res.json({ sessions: data.games, total: data.total, page: data.page, limit: data.limit, totalPages: data.totalPages });
+    }),
+
     closeRoom: handle(async (req, res) => {
         const room = await AdminService.closeRoom(req.params.id);
         res.json(room);

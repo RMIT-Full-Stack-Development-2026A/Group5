@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gameSessionService } from '../../services/gameSessionService';
+import { http } from '../../services/httpService.js';
 
 
 const formatDate = (iso) => {
@@ -78,9 +79,28 @@ export default function ProfileHistory() {
         const handle = setTimeout(async () => {
             setLoading(true);
             try {
-                const { sessions } = await gameSessionService.getHistory(filters);
+                // If current user is admin, fetch all games via admin API
+                let response = null;
+                try {
+                    const authUser = JSON.parse(localStorage.getItem('authUser') || 'null');
+                    if (authUser?.role === 'admin') {
+                        const qs = new URLSearchParams(
+                            Object.entries(filters).filter(([, v]) => v != null && v !== '')
+                        ).toString();
+                        const url = qs ? `/admin/games?${qs}` : `/admin/games`;
+                        response = await http.get(url);
+                        response = { sessions: response.sessions || [] };
+                    }
+                } catch (_e) {
+                    // ignore and fall back to player history
+                }
+
+                if (!response) {
+                    response = await gameSessionService.getHistory(filters);
+                }
+
                 if (!cancelled) {
-                    setSessions(sessions || []);
+                    setSessions(response.sessions || []);
                     setError(null);
                 }
             } catch (err) {

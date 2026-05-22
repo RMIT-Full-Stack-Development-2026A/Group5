@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './gameBoard.css';
 import { useOnlineGameBoard } from './useOnlineGameBoard';
 import { ClassicGameBoard } from './boards/ClassicGameBoard';
+import { getSocket, emitAck } from '../../services/socketClient';
 
 
 const OnlineGameBoard = ({ roomInfo }) => {
@@ -38,6 +39,36 @@ const OnlineGameBoard = ({ roomInfo }) => {
     const youName        = roomInfo?.you === 'player1' ? roomInfo?.player1?.username : roomInfo?.player2?.username;
     const opponentName   = roomInfo?.you === 'player1' ? roomInfo?.player2?.username : roomInfo?.player1?.username;
 
+    // ── Chat ──────────────────────────────────────────────
+    const [messages, setMessages]   = useState([]);
+    const [draft, setDraft]         = useState('');
+    const scrollerRef               = useRef(null);
+
+    useEffect(() => {
+        const socket = getSocket();
+        const onChat = (msg) => setMessages((prev) => [...prev, msg]);
+        socket.on('chatMessage', onChat);
+        return () => socket.off('chatMessage', onChat);
+    }, []);
+
+    useEffect(() => {
+        if (scrollerRef.current) {
+            scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    const sendChat = async (e) => {
+        e.preventDefault();
+        const text = draft.trim();
+        if (!text) return;
+        setDraft('');
+        try {
+            await emitAck('chat', { message: text });
+        } catch (err) {
+            console.error('chat failed', err);
+        }
+    };
+
     return (
         <div className="d-flex flex-column align-items-center py-4 col-lg-8">
             <div className="d-flex justify-content-center gap-3 w-75 mb-3">
@@ -63,15 +94,59 @@ const OnlineGameBoard = ({ roomInfo }) => {
                 </div>
             </div>
 
-            <ClassicGameBoard
-                board={board}
-                winningLine={winningLine}
-                winDirection={winDirection}
-                handleCellClick={handleCellClick}
-                boardSize={boardSize}
-            />
+            <div className="d-flex gap-3 w-100 justify-content-center">
+                <ClassicGameBoard
+                    board={board}
+                    winningLine={winningLine}
+                    winDirection={winDirection}
+                    handleCellClick={handleCellClick}
+                    boardSize={boardSize}
+                />
 
-            <div className="lobby-footer text-center">
+                {/* Chat panel */}
+                <div className="card d-flex flex-column" style={{ width: 280, maxHeight: 480 }}>
+                    <div className="card-header py-2 fw-bold">Chat</div>
+                    <div
+                        ref={scrollerRef}
+                        className="card-body p-2 small"
+                        style={{ overflowY: 'auto', flex: 1 }}
+                    >
+                        {messages.length === 0 && (
+                            <div className="text-muted">Say hi to your opponent…</div>
+                        )}
+                        {messages.map((m, i) => {
+                            const mine = m.from === youName;
+                            return (
+                                <div key={i} className={`mb-2 d-flex ${mine ? 'justify-content-end' : 'justify-content-start'}`}>
+                                    <div
+                                        className={`px-2 py-1 rounded ${mine ? 'bg-primary text-white' : 'bg-light text-dark'}`}
+                                        style={{ maxWidth: '85%', wordBreak: 'break-word' }}
+                                    >
+                                        {!mine && <div className="fw-bold small">{m.from}</div>}
+                                        <div>{m.message}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <form onSubmit={sendChat} className="card-footer p-2 d-flex gap-1">
+                        <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            placeholder="Type a message…"
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            maxLength={500}
+                            disabled={isOver}
+                        />
+                        <button type="submit" className="btn btn-sm btn-primary" disabled={isOver || !draft.trim()}>
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div className="lobby-footer text-center mt-3">
                 ROOM CODE: {roomInfo?.code} · LOBBY ID: {lobbyId}
             </div>
         </div>
